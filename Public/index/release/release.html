@@ -1,0 +1,105 @@
+
+<van-notice-bar
+    v-if="!App.temp.isAc"
+    color="#1989fa"
+    background="#ecf9ff"
+    left-icon="info-o"
+    @click="downloadApp"
+    mode="link">
+    点击这里下载App体验完整功能
+</van-notice-bar>
+<transition name="van-slide-up">
+<div v-show="visible">
+    <van-swipe class="my-swipe" :autoplay="5000" indicator-color="white">
+        <van-swipe-item v-for="item in swipe">
+            <img :src="App.res + item.pic" style="height: 10rem;" alt="" />
+        </van-swipe-item>
+    </van-swipe>
+
+    <van-grid :border="false" :column-num="1">
+        <van-grid-item @click="relPage('text')">
+            <van-image class="border" :src="App.href+'static/image/release-text.png'"></van-image>
+        </van-grid-item>
+    </van-grid>
+
+    <van-grid :border="false" :column-num="2">
+      <van-grid-item @click="relPage('img')">
+        <van-image height="100" class="border" :src="App.href+'static/image/release-img.png'"></van-image>
+      </van-grid-item>
+      <van-grid-item @click="relPage('video')">
+          <van-image height="100" class="border" :src="App.href+'static/image/release-video.png'"></van-image>
+      </van-grid-item>
+    </van-grid>
+    <p style="text-align: center;color: #aaa;">更多内容敬请期待</p>
+
+</div>
+</transition>
+
+<!--弹出层-->
+<van-popup
+    v-model="show_popup"
+    @opened="loadPopup"
+    @close="closePopup"
+    position="right"
+    style="width:100%; height:100%;"
+>
+    <div id="release-popup">
+    </div>
+</van-popup>
+
+<script>
+
+    //导入组件 form vant
+    App.use([
+        'Swipe', 'SwipeItem', 'NoticeBar'
+    ], vant);
+
+    //定义Vue实例
+    page.release = new Vue({
+        el: '#main-release',
+        data: {
+            visible:false,
+            upopup: null,
+            action: '',
+            show_popup: false,
+
+            //轮播图
+            swipe: [
+                {
+                    pic: 'res/poster/swipe-1.jpg'
+                },
+                {
+                    pic: 'res/poster/swipe-2.jpg'
+                }
+            ]
+        },
+        methods: {
+            //载入弹出层
+            loadPopup: function(){
+                $('#release-popup').load(App.href + page.release.action);
+                App.addBack(function(){
+                    page.release.show_popup = false;
+                });
+            },
+            //关闭弹出层
+            closePopup: function(){
+                if(page.release.upopup && page.release.upopup.$destroy) page.release.upopup.$destroy();
+                page.release.upopup = null;
+                $('#release-popup').empty();
+                App.goBack(-1); //清空记录
+            },
+            //内容上传发布页
+            relPage: function(type){
+                App.temp.releaseType = type;
+
+                page.release.action = 'index/release/form';
+                page.release.show_popup = true;
+            },
+            downloadApp:function(){
+                window.location.href = '/download';
+            }
+        }
+    });
+
+    page.release.visible = true;
+</script>

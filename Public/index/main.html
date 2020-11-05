@@ -1,0 +1,230 @@
+
+<div>
+
+    <van-nav-bar v-show="navber" @click-right="onClickRight">
+        <template #title>
+            {{title}}
+        </template>
+        <template #right>
+            <!--<van-icon name="search" size="18"></van-icon>-->
+            跳转
+        </template>
+    </van-nav-bar>
+
+    <div v-show="tabbar==0">
+        <div id="main-page">
+            加载中
+        </div>
+    </div>
+
+    <div v-show="tabbar==1">
+        <div id="main-discover">
+            <span>加载中</span>
+        </div>
+    </div>
+
+    <div v-show="tabbar==2">
+        <div id="main-release">
+            <span>加载中</span>
+        </div>
+    </div>
+
+    <div v-show="tabbar==3">
+        <div id="nav3">
+            <van-cell title="系统消息" :icon="App.href+'favicon.ico'" value="10-19 16:01" label="欢迎加入皮小猿！"></van-cell>
+            <van-cell title="官方" :icon="App.href+'favicon.ico'" value="10-19 16:20" label="该功能正在努力开发中"></van-cell>
+        </div>
+    </div>
+
+    <div v-show="tabbar==4">
+        <div id="user-home">
+            <span>加载中</span>
+        </div>
+    </div>
+
+    <van-tabbar v-model="tabbar" placeholder>
+        <van-tabbar-item icon="home-o"   >{{tabs[0].name}}</van-tabbar-item>
+        <van-tabbar-item icon="search"   >{{tabs[1].name}}</van-tabbar-item>
+        <van-tabbar-item icon="add-o" class="test"></van-tabbar-item>
+        <van-tabbar-item icon="comment-o" dot>{{tabs[3].name}}</van-tabbar-item>
+        <van-tabbar-item icon="contact"  >{{tabs[4].name}}</van-tabbar-item>
+    </van-tabbar>
+
+    <!--帖子弹出层-->
+    <!--closeable-->
+    <!--close-icon-position="top-left"-->
+    <!--lazy-render = true-->
+    <!--lock-scroll-->
+    <van-popup
+        v-model="popup_show"
+        position-xx="right"
+        lazy-render = false
+        position="bottom"
+        :style="{ height: '100%',width: '100%' }"
+        @opened="loadArticle"
+        @close="closeArticle"
+    >
+        <div id="article-page"></div>
+    </van-popup>
+</div>
+<script>
+    App.temp.isAc = ('api' in window);
+
+    //导入组件 form vant
+    App.use(['Tabbar', 'TabbarItem', 'Search',
+        'Tab', 'Tabs', 'Lazyload', 'PullRefresh',
+        'Popup', 'Dialog'
+    ], vant);
+
+    // 加载css资源
+    App.loadRes(App.href + 'static/css/index/main.css','css');
+
+    //定义Vue实例
+    page = new Vue({
+        el: App.el,
+        data: {
+            title: "Main Title",
+            tabbar: null, //底部导航栏索引
+            navber: true,//顶部导航栏
+            /* 首页相关 */
+            mpage: null,
+            
+            /* 发现页 */
+            discover: null,
+            
+            /* 发布页 */
+            release: null,
+            
+            // 个人中心
+            uhome: null,
+
+            //内容显示页
+            popup_show: false,
+            article: null, // 弹出层文章页
+
+            //底部导航栏
+            tabs: [
+                {name: '首页', url: '/index/nav/page0'},
+                {name: '发现', url: '/index/nav/page1'},
+                {name: '发布', url: '/index/nav/page2'},
+                {name: '消息', url: '/index/nav/page3'},
+                {name: '我的', url: '/index/nav/page4'}
+            ]
+        },
+        methods: {
+            onClickRight(){
+                App.open('index/hahaha');
+            },
+            // 帖子相关
+            loadArticle(){
+                $('#article-page').load(App.href+'index/article/show');
+            },
+            closeArticle(){
+                if(page.article && page.article.$destroy) page.article.$destroy();
+                page.article = null;
+                $('#article-page').empty();
+            }
+        },
+        watch: {
+            tabbar(index) {
+
+                switch(index){
+                    case 0: //首页
+                        page.navber = false;
+                        if(!page.mpage){
+                            $('#main-page').load(App.href+'index/article/list');
+                        }else{
+                            page.mpage.reboot && page.mpage.reboot();
+                        }
+                        break;
+                    case 1: //第二页
+                        page.navber = false;
+                        if(!page.discover){
+                            $('#main-discover').load(App.href+'index/discover/discover');
+                        }else{
+                            page.discover.reboot && page.discover.reboot();
+                        }
+                        break;
+                    case 2: //发布
+                        page.navber = true;
+                        if(!page.release){
+                            $('#main-release').load(App.href+'index/release/release');
+                        }else{
+                            page.release.reboot && page.release.reboot();
+                        }
+                        break;
+                    case 3: //消息
+                        page.navber = true;
+                        break;
+                    case 4: //我的
+                        page.navber = false;
+                        if(!page.uhome){
+                            $('#user-home').load(App.href+'index/user/home');
+                        }else{
+                            page.uhome.reboot && page.uhome.reboot();
+                        }
+                        break;
+                }
+                App.goBack(-1); //清空记录
+
+                //记录当前页索引
+                localStorage.main_index = index;
+
+                page.title = page.tabs[index].name;
+                App.setTitle(page.title + ' - ' + App.name);
+                //页内重定向
+                App.redirect('index/main-'+index);
+
+                //设置App状态栏背景
+                if('api' in window){
+                    api.sendEvent({
+                        name: 'setStatusBarBgColor',
+                        extra: {
+                            color: index == 4?'#ff8c05':'#fff'
+                        }
+                    });
+                    api.setStatusBarStyle({
+                        style: index == 4?'light':'dark'
+                    });
+                }
+            }
+        }
+    });
+
+    $(()=>{
+        // 阻止返回
+        // if (window.history && window.history.pushState) {
+        //     $(window).on('popstate', function () {
+        //         window.history.forward(1);
+        //     });
+        // }
+
+        //根据地址栏参数切换页面
+        var url_page = App.formatRoute(App.getRoute())['param'];
+        var route = url_page.split('-');
+        if(route){
+            page.tabbar = Number(route[0]);
+            if(route[1]){
+                //路由加载
+                switch(route[1]){
+                    case 'a': //帖子查看
+                        //设置显示的帖子Id
+                        localStorage.showArticle = route[2];
+                        break;
+                }
+            }
+        }else{
+            var i = localStorage.main_index;
+            page.tabbar = Number(i?i:0);
+        }
+
+    });
+
+    //重启App
+    function reApp(){
+        api.clearCache(function() {
+            api.rebootApp();
+        });
+    }
+
+</script>

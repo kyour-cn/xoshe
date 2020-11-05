@@ -1,0 +1,28 @@
+{
+    "name": "easyswoole/ddl",
+    "type": "library",
+    "description": "An efficient swoole framework",
+    "keywords": [
+        "swoole",
+        "framework",
+        "async",
+        "easyswoole"
+    ],
+    "homepage": "https://www.easyswoole.com/",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "YF",
+            "email": "291323003@qq.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "EasySwoole\\DDL\\": "src/",
+            "EasySwoole\\DDL\\Test\\":"test/"
+        }
+    },
+    "require": {
+        "easyswoole/spl": "^1.2"
+    }
+}

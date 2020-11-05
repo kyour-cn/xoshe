@@ -1,0 +1,197 @@
+<div>
+
+    <van-nav-bar
+        fixed
+        title="标题"
+        @click-left="onCloseShow"
+        @click-right="onClickRight"
+    >
+        <template #left>
+            <van-icon name="cross" size="23"  color="#c8c9cc"></van-icon>
+        </template>
+        <template #right>
+            <van-icon name="more-o" size="23" color="#333"></van-icon>
+        </template>
+    </van-nav-bar>
+    <div style="height: 46px;"></div>
+
+    <div>
+        <van-cell :title="info.nickname" class="list avatar" :icon="App.href + info.avatar">
+            <template #right-icon>
+                <van-button size="mini" round plain color="#fe698d" icon="plus">关注</van-button>
+            </template>
+        </van-cell>
+        <!--文章内容-->
+            <p class="article-text">{{info.content}}</p>
+
+        <div class="main-call">
+
+            <van-grid
+                v-if="info.type.indexOf('img') != -1"
+                :border="false"
+                :column-num="3"
+                class="no-gridpadd"
+            >
+                <van-grid-item v-for="(item,key) in resources">
+                    <van-image
+                        class="border"
+                        @click="showImg(key, $event)"
+                        fit="cover"
+                        lazy-load
+                        height="100"
+                        :src="item"
+                    ></van-image>
+                </van-grid-item>
+            </van-grid>
+
+            <div
+                class="small-video"
+                 v-if="info.type.indexOf('video') != -1"
+                 style="width: 100%;"
+            >
+                <img
+                    class="vpalse"
+                    id="videoPalse"
+                    @click="videoClick"
+                    :src="App.href+ '/static/image/video-ext/video_btn_play.svg'"
+                />
+                <video
+                    id="videoPlay"
+                    @click="videoClick"
+                    :poster="resources[0]"
+                    :src="resources[1]"
+                    type="video/mp4"
+                    loop="loop"
+                    playsInline="true"
+                    webkit-playsinline="true"
+                    width="100%"
+                    height="100%"
+                ></video>
+            </div>
+<!--            <video-->
+<!--                v-if="info.type.indexOf('video') != -1"-->
+<!--                style="max-height: 18rem;width: 100%;"-->
+<!--                :src="info.resource"-->
+<!--                controls = "true"-->
+<!--                preload="auto"-->
+<!--                webkit-playsinline="true"-->
+<!--                playsinline="true"-->
+<!--                x-webkit-airplay="allow"-->
+<!--                x5-video-player-type="h5"-->
+<!--                x5-video-player-fullscreen="true"-->
+<!--                x5-video-orientation="portraint"-->
+<!--            ></video>-->
+        </div>
+
+        <div style="height: 0.2rem;width: 100%;background: #dcdee0;"></div>
+        <van-cell class="avatar-big" :icon="App.href + '/avatar/1.png'" title="今天你吃了吗" value="" size="large" label="320个用户已加入">
+            <template #right-icon>
+                <van-button style="margin-top: 0.5rem;" size="mini" round plain color="#fe698d" icon="plus">加入</van-button>
+            </template>
+        </van-cell>
+        <div style="height: 0.2rem;width: 100%;background: #dcdee0;"></div>
+
+        <div style="margin-bottom: 50px;">
+            <van-cell class="list avatar" :icon="App.href + '/avatar/1.png'" title="单元格" value="内容" label="描述信息"></van-cell>
+            <van-cell class="list avatar" :icon="App.href + '/avatar/1.png'" title="单元格" value="内容" label="描述信息"></van-cell>
+            <van-cell class="list avatar" :icon="App.href + '/avatar/1.png'" title="单元格" value="内容" label="描述信息"></van-cell>
+        </div>
+
+    </div>
+
+</div>
+<van-tabbar style="background: #fafafa;">
+    <van-row style="width: 100%;padding: 0.5rem 0.5rem;">
+        <van-col span="13" style="background: #fff;border-radius: 1rem;height: 100%;padding-top: 0.3rem;">
+            <span style="padding-left: 1.5rem;color: #888;">写评论...</span>
+        </van-col>
+        <van-col span="11" style="height: 100%;padding-top: 0.3rem;">
+            <span class="article-btn-l"><van-icon name="good-job-o" size="20"></van-icon>{{info.up}}</span>
+            <span class="article-btn-l"><van-icon name="star-o" size="20"></van-icon>{{info.star}}</span>
+            <span class="article-btn-r" style="padding-left: 0.2rem;"><van-icon name="share-o" size="25"></van-icon></span>
+        </van-col>
+    </van-row>
+
+</van-tabbar>
+<script>
+
+    //导入组件 form vant
+    // App.use([], vant);
+
+    //设置当前url，便于分享
+    App.redirect('index/main-0-a-'+App.temp.articleId);
+    //定义Vue实例
+    App.temp.article = new Vue({
+        el: '#article-page',
+        data: {
+            id: App.temp.articleId,
+            info: {
+                type: 'text',
+                nickname: '加载中',
+                avatar: 'avatar/default.png'
+            },
+            //图片预览
+            showImg: function(key, e){
+                e.stopPropagation();
+                vant.ImagePreview({
+                    images: App.temp.article.resources,
+                    startPosition: key
+                });
+            },
+        },
+        methods: {
+            //关闭帖子弹出层
+            onCloseShow: function(){
+                App.temp.articleClose();
+            },
+            onClickRight: function(){
+                vant.Toast('更多');
+            },
+            videoClick: function(){
+                var videoplay = document.getElementById("videoPlay");
+                var videoPalse = document.getElementById("videoPalse"); //video标签
+                if (videoplay.paused) {
+                    videoplay.play();
+                    videoPalse.style.display = "none"; //播放的时候图标隐藏
+                } else {
+                    videoplay.pause();
+                    videoPalse.src = App.href+ '/static/image/video-ext/video_btn_pause.svg';
+                    videoPalse.style.display = "block"; //暂停的时候图标显示
+                }
+            }
+        },
+        computed: {
+            resources: function() {
+                if(!this.info.resource) return [];
+                var arr = this.info.resource.split(',');
+                for (var i in arr) {
+                    arr[i] = App.res + arr[i];
+                }
+                return arr;
+            }
+        }
+    });
+
+    (function(){
+
+        //获取帖子内容
+        App.es.ajax({
+            cmd: 'index.posts.getArticle',
+            data: {
+                id: App.temp.articleId
+            }
+        },function(ret, err){
+            if(ret){
+                if(ret.code === 0){
+                    App.temp.article.info = ret.result;
+                }else{
+                    van.Toast.fial(ret.message);
+                }
+            }else{
+                vant.Toast.fial('网络错误');
+            }
+        });
+
+    })();
+
+</script>

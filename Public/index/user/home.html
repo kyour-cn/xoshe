@@ -1,0 +1,205 @@
+
+<div :style="'background: url('+App.local+'static/image/bg/header-y.png);background-size: 100% 100%;padding-right: 1rem;'">
+
+    <div class="my-navbar">
+        <span style="padding-left: 1.5rem;">
+            <span style="color: #fff;">我的</span>
+        </span>
+        <span style="float: left;padding-top: 0.3rem;">
+            <van-icon name="friends-o" size="20" color="#eee"></van-icon>
+        </span>
+        <span style="float: right;padding-right: 2rem;padding-top: 0.3rem;">
+            <van-icon name="setting-o" size="20" color="#eee"></van-icon>
+            <van-icon name="scan" size="20" color="#eee"></van-icon>
+        </span>
+    </div>
+
+    <div style="height: 100%;padding: 3rem 1rem 1rem 1rem;">
+        <div style="background-color: #fafafa;width:100%;height:7rem;border-radius:0.5rem;padding: 0.5rem;">
+            <van-row @click="userInfo">
+                <van-col span="5">
+                    <img :src="App.href+'static/image/icon.png'" style="border-radius:3rem;margin:0 auto;width: 3rem;height: 3rem;margin: .1rem 0 0 .25rem;">
+                </van-col>
+                <van-col span="17">
+                    <span v-if="user.sex == 'm'" style="color: #0c6dff;">♂</span>
+                    <span v-else style="color: #e85c5c;">♀</span>
+                    <span style="font-weight: 800;">{{ user.nickname }}</span>
+                    <p>
+                        <span>已加入{{ inDay }}天 &nbsp;<span style="font-size: 0.75rem;">猿码：{{ user.num }}</span>&nbsp;</span>
+                        <span v-for="val in user.level" style="color: #e82424;font-size: 1rem;">★</span>
+                    </p>
+                </van-col>
+                <van-col span="2">
+                    <van-icon style="float: right;padding-top: 0.5rem;" color="#666" name="arrow"></van-icon>
+                </van-col>
+            </van-row>
+            <van-row>
+                <van-col span="6" style="text-align: center;" @click="openWin('user-follow')">
+                    <span>{{ user.info.follow }}</span>
+                    <div style="color: #666;font-size: 0.75rem;">关注</div>
+                </van-col>
+                <van-col span="6" style="text-align: center;" @click="openWin('user-fans')">
+                    <span>{{ user.info.fans }}</span>
+                    <div style="color: #666;font-size: 0.75rem;">粉丝</div>
+                </van-col>
+                <van-col span="6" style="text-align: center;" @click="openWin('user-star')">
+                    <span>{{ user.info.star }}</span>
+                    <div style="color: #666;font-size: 0.75rem;">收藏</div>
+                </van-col>
+                <van-col span="6" style="text-align: center;" @click="openWin('user-posts')">
+                    <span>{{ user.info.posts }}</span>
+                    <div style="color: #666;font-size: 0.75rem;">发帖</div>
+                </van-col>
+            </van-row>
+        </div>
+    </div>
+</div>
+
+<div style="margin: 0 1rem;">
+    <div style="background-color: #ff9000;border-radius: 1rem; height: 2rem;padding: 0.5rem 0 0 1rem;color: #fff;">
+        功能投稿，努力成为你要的样子！
+    </div>
+</div>
+
+<div style="margin: 1rem;background-color: #f5f5f5;border-radius: 1rem;">
+    <van-grid class="my-grid">
+        <van-grid-item icon="fire-o" text="发布" @click="openWin('grid-posts')"></van-grid-item>
+        <van-grid-item icon="chat-o" text="评论" @click="openWin('grid-comment')"></van-grid-item>
+        <van-grid-item icon="good-job-o" text="点赞" @click="openWin('grid-good')"></van-grid-item>
+        <van-grid-item icon="orders-o" text="浏览历史" @click="openWin('grid-history')"></van-grid-item>
+        <van-grid-item icon="edit" text="工具中心" @click="openWin('grid-tools')"></van-grid-item>
+        <van-grid-item icon="down" text="视频下载" @click="openWin('grid-down')"></van-grid-item>
+        <van-grid-item icon="passed" text="认证中心" @click="openWin('grid-verify')"></van-grid-item>
+        <van-grid-item icon="browsing-history-o" text="小黑屋" @click="openWin('grid-blackHouse')"></van-grid-item>
+    </van-grid>
+</div>
+
+<p style="margin-left: 1rem;">功能入口</p>
+<van-cell title="检查更新" is-link></van-cell>
+<van-cell title="帮助反馈" is-link></van-cell>
+<van-cell title="重启App" onclick="reApp()" is-link></van-cell>
+<van-cell title="设置" is-link></van-cell>
+
+<!--弹出层-->
+<van-popup
+    v-model="show_popup"
+    @opened="loadPopup"
+    @close="closePopup"
+    position="right"
+    style="width:100%; height:100%;"
+>
+    <div id="user-popup">
+    </div>
+</van-popup>
+
+<script>
+
+    //导入组件 form vant
+    App.use([
+        'Col', 'Row', 'Grid', 'GridItem'
+    ], vant);
+
+    //定义Vue实例
+    page.uhome = new Vue({
+        el: '#user-home',
+        data: {
+            //弹出层操作名
+            action: '',
+            //登录用户信息
+            user: {
+                nickname: '点击登录',
+                register_time: 0,
+                num: '00001',
+                level: 0,
+                status: -1,
+                sex: 'm',
+                info: {
+                    fans:   0,
+                    star:   0,
+                    posts:  0,
+                    follow: 1
+                }
+            },
+            defaultData: null,
+            upopup: null,
+            show_popup: false
+        },
+        methods: {
+            //载入弹出层
+            loadPopup: function(){
+                $('#user-popup').load(App.href + page.uhome.action);
+                App.addBack(function(){
+                    page.uhome.show_popup = false;
+                });
+            },
+            //关闭弹出层
+            closePopup: function(){
+                if(page.uhome.upopup && page.uhome.upopup.$destroy) page.uhome.upopup.$destroy();
+                page.uhome.upopup = null;
+                page.uhome.getInfo();//刷新
+                $('#user-popup').empty();
+                App.goBack(-1); //清空记录
+            },
+            //打开窗口
+            openPopup: function(uri){
+                page.uhome.action = uri;
+                page.uhome.show_popup = true;
+            },
+            userInfo: function(){
+                if(page.uhome.user.status == -1){
+                    this.openPopup('index/user/login');
+                }else{
+                    this.openPopup('index/user/info');
+                }
+            },
+            getInfo: function(){
+                //访问用户信息
+                App.es.ajax({
+                    cmd: 'index.User.getInfo'
+                },function(ret, err){
+                    if(ret){
+                        if(ret.code == 0){
+                            page.uhome.user = ret.result.info;
+                        }else if(ret.code == 101){
+                            page.uhome.user = page.uhome.defaultData;
+                            page.uhome.loginPage();
+                            vant.Toast(ret.message);
+                        }
+                    }else{
+                        vant.Toast('网络错误');
+                    }
+                });
+            },
+            loginPage: function(){
+                vant.Dialog.confirm({
+                    title: '您还未登录',
+                    message: '是否前往登录？',
+                })
+                .then(() => {
+                    page.uhome.action = 'index/user/login';
+                    page.uhome.show_popup = true;
+                });
+            },
+            openWin: function(name, event){
+                alert(name)
+            }
+        },
+        //计算属性
+        computed: {
+            //加入天数
+            inDay: function () {
+                if(this.user.register_time == 0)return 0;
+                var t = new Date().getTime().toString();
+                t = Number(t.substr(0, 10));
+                return parseInt((t - this.user.register_time)/86400);
+            }
+        }
+    });
+
+    // 其他操作
+    // page.uhome.show_popup = true;
+    page.uhome.defaultData = page.uhome.user;
+
+    page.uhome.getInfo();
+
+</script>

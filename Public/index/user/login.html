@@ -1,0 +1,86 @@
+
+<div>
+  <!--@click-left="onClickLeft"-->
+  <!--@click-right="onClickRight"-->
+    <van-nav-bar
+        title="登录"
+        left-text="返回"
+        right-text="注册"
+        left-arrow
+        @click-left="onClickLeft"
+        @click-right="onRegist"
+    ></van-nav-bar>
+
+    <van-form @submit="onSubmit">
+        <van-field
+            v-model="username"
+            name="username"
+            type="number"
+            label="登录账号"
+            placeholder="用户号|手机号"
+            :rules="[{ required: true, message: '请填写用户号 | 手机号' }]"
+        ></van-field>
+        <van-field
+            v-model="password"
+            type="password"
+            name="password"
+            label="密码"
+            placeholder="请填写密码"
+            :rules="[{ required: true, message: '请填写密码' }]"
+        ></van-field>
+        <div style="margin: 1rem;">
+            <van-button v-show="!loging" round block type="info" native-type="submit">
+              提交
+            </van-button>
+            <van-button v-show="loging" loading type="info" round block loading-text="登录中..."></van-button>
+        </div>
+    </van-form>
+
+</div>
+<script>
+
+    //导入组件 form vant
+    App.use(['Form'], vant);
+
+    //定义Vue实例
+    page.uhome.upopup = new Vue({
+        el: '#user-popup',
+        data: {
+            loging: false,
+            username: '',
+            password: '',
+        },
+        methods: {
+            onSubmit(values) {
+                if(this.loging) return;
+                this.loging = true;
+                $.ajax({
+                    url: App.href + 'index/user/loginApi',
+                    method: 'POST',
+                    data: values,
+                    success: function (ret) {
+                        page.uhome.upopup.loging = false;
+                        vant.Toast(ret.message);
+                        setTimeout(function() {
+                            page.uhome.show_popup = false;
+                            page.uhome.getInfo();
+                        }, 500);
+                    },
+                    error: function () {
+                        page.uhome.upopup.loging = false;
+                        vant.Toast.fail('网络错误');
+                    }
+                });
+            },
+            onClickLeft: function(){
+                page.uhome.show_popup = false;
+                // page.tabbar = 0; // 跳到首页
+            },
+            onRegist: function(){
+                if(page.uhome.upopup && page.uhome.upopup.$destroy) page.uhome.upopup.$destroy();
+                $('#user-popup').load(App.href + 'index/user/regist');
+            }
+        }
+    });
+
+</script>

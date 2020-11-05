@@ -1,0 +1,118 @@
+@charset "gb2312";
+@import url("base.min.css");
+body{
+	padding: 0 16px;
+}
+.header{
+	margin-top: 24px;
+	margin-bottom: 57px;
+}
+.header img{
+	height: 30px;
+}
+
+.fs-29{
+	font-size: 29px;
+}
+.fs-15{
+	font-size: 15px;
+}
+.fs-19{
+	font-size: 19px;
+}
+.fs-12{
+	font-size: 12px;
+}
+.fc-43{
+	color: #4396F7;
+}
+.fc-66{
+	color: #666;
+}
+.fc-33{
+	color: #333;
+}
+.fm-sun{
+	font-family: simsun;
+}
+.fw-b{
+	font-weight: 600;
+}
+.mg10-t{
+	margin-top: 10px;
+}
+.mg14-t{
+	margin-top: 14px;
+}
+.mg19-t{
+	margin-top: 19px;
+}
+.mg20-t{
+	margin-top: 20px;
+}
+.mg24-t{
+	margin-top: 24px;
+}
+.mg35-t{
+	margin-top: 35px;
+}
+.mg70-t{
+	margin-top: 70px;
+}
+.mg7-t{
+	margin-top: 7px;
+}
+.mg50-b{
+	margin-bottom: 50px;
+}
+.mg24-r{
+	margin-right: 24px;
+}
+.mg24-l{
+	margin-left: 24px;
+}
+.mg50-r{
+	margin-right: 50px;
+}
+.mg50-l{
+	margin-left: 50px;
+}
+.con-img{
+	width: 90%;
+}
+.pos-img{
+	position: absolute;
+	top: 150px;
+	left: 0;
+	width: 36px;
+}
+.download{
+	background: -webkit-linear-gradient(left, #49d1f8 , #4a9af7); /* Safari 5.1 - 6.0 */
+	background: -o-linear-gradient(right, #49d1f8, #4a9af7); /* Opera 11.1 - 12.0 */
+	background: -moz-linear-gradient(right, #49d1f8, #4a9af7); /* Firefox 3.6 - 15 */
+	background: linear-gradient(to right, #49d1f8 , #4a9af7); /* 标准的语法 */
+	height: 47px;
+	line-height: 47px;
+	color: #fff;
+	font-size: 20px;
+	width: 185px;
+	margin: auto;
+	margin-bottom: 50px;
+	border-radius: 3px;
+	box-shadow: 0px 0px 14px rgba(74, 155, 247, 0.51);
+}
+.ps{
+	height: 96px;
+}
+.icon{
+	width: 98px;
+}
+.icon img{
+	width: 100%;
+}
+.text-right{
+	text-align: right;
+}
+.text-left{
+	text-align: left;
+}

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, initial-scale=1.0, width=device-width"/>
+    <meta name="format-detection" content="telephone=no, email=no, date=no, address=no">
+
+    <link rel="stylesheet" href="/static/extend/vant/vant.min.css" />
+    <style>
+        .wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #eee;
+        }
+    </style>
+</head>
+<body>
+
+    <section id="v-page">
+    </section>
+
+    <div id="app-view">
+        <van-overlay :show="overlay">
+            <div class="wrapper">
+                加载中
+            </div>
+        </van-overlay>
+    </div>
+
+<!--    <script src="/static/extend/js/jquery-ajax.min.js"></script>-->
+<!--    <script src="/static/extend/js/vue.min.js"></script>-->
+<!--    <script src="/static/extend/vant/vant.min.js"></script>-->
+    <script src="/static/js/dependent.js"></script>
+    <script src="/static/extend/easysocket/easysocket.js"></script>
+    <script src="/static/js/app.js"></script>
+
+    <script type="text/javascript" charset="utf-8">
+
+    //应用信息 -Web版
+    App.name = '小猿社';
+    App.host = 'mk.kyour.cn';
+    App.href = document.location.protocol + '//'+ App.host +'/';
+    App.local = '/';
+    App.res = 'http://res-mk.kyour.cn/';
+
+    /* App和web以下内容相同 */
+
+    //页面vue实例
+    var page = null;
+
+    //导入组件 form vant
+    App.use(['Overlay', 'Button', 'NavBar', 'Col', 'Row', 'Empty', 'Icon'], vant);
+
+    App.view = new Vue({
+        el: '#app-view',
+        data: {
+            title: '',
+            //加载遮罩
+            overlay: true
+        }
+    });
+
+    //WebSocket连接
+    App.es = new EasySocket({
+        url: (document.location.protocol == 'https:' ?
+            'wss://'+App.host+':443' : 'ws://'+App.host),
+        heart: {
+            cmd: 'index.heart',
+            data: function (){
+                return {
+                    sessid: App.getCookie('sessionId')
+                }
+            }
+        },
+        heartSleep: 10,
+        sessionName: 'sessionId',
+        eventKey: 'cmd',
+        reconn: true,
+        debug: true
+    });
+
+    App.es.init(function(){
+
+        //连接成功 -发送一次心跳
+        App.es.sendHeart();
+
+    });
+
+    $(function(){
+
+        App.setTitle(App.name);
+
+        //取出当前地址
+        var href = window.location.href;
+        var index = href.indexOf("#");
+        if(index == -1){
+            index = href.length;
+        }
+
+        var url = href.substr(index +1);
+        if(!url){
+            //加载新模板页面
+            url = App.href + 'index/main';
+        }
+        App.route.push(url);
+        App.open(url, false);
+
+    });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Socket Test</title>
+</head>
+
+<body>
+<script src="/static/js/easysocket.min.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    //socket服务器域名:端口
+    var socket_host = window.location.host + ':8104';
+
+    //socket配置
+    var es_conf = {
+        //ws服务器链接
+        url: (document.location.protocol == 'https:'?'wss':'ws')+'://'+socket_host,
+        //心跳内容
+        heart: {
+            cmd: 'index.hello',
+            data: function (){
+                var data = {
+                    user: 'test',
+                    key: 'testKey'
+                };
+                return data;
+            }
+        },
+        //心跳间隔时间-秒
+        heartSleep: 5,
+        //事件名称的键名
+        eventKey: 'cmd',
+        //断开是否自动重连
+        reconn: true,
+        //调试模式
+        debug: true
+    };
+
+    //实例化对象
+    var es = new EasySocket(es_conf);
+    es_conf = undefined;
+
+    //连接服务器
+    es.init(function(){
+
+        // es.event.close = function (){
+        //     alert('dad')
+        // }
+
+        //连接成功 - 手动发送一次心跳
+        es.sendHeart();
+
+        //注册消息事件
+        es.addListener('user.login',function(ret) {
+
+            if(ret.data.status == 1){
+                //发送获取数据请求
+                es.send({
+                    cmd: 'home.getData',
+                    data: {
+                        sessid: Wingo.sessid,
+                        type: Wingo.type
+                    }
+                },true);
+            }
+            // console.log(ret);
+
+        });
+
+        //模拟ajax请求
+        es.ajax({
+            cmd: 'index.hello',
+            outtime: 5, //超时时间，秒
+            data: {
+                num: 1
+            }
+        },function(ret,err){
+            if(ret){
+                alert(ret.message);
+            }else{
+                alert(err.message);
+            }
+        });
+
+    });
+
+</script>
+</body>
+</html>

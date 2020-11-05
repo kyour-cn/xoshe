@@ -1,0 +1,108 @@
+
+<div>
+  <!--@click-left="onClickLeft"-->
+  <!--@click-right="onClickRight"-->
+    <van-nav-bar
+        title="个人中心"
+        left-text="返回"
+        left-arrow
+        right-text="注销"
+        @click-left="onClickLeft"
+        @click-right="onLogout"
+    ></van-nav-bar>
+
+    <div style="text-align: center;padding: 2rem 0;">
+        <img style="border-radius: 50%;" src="http://q1.qlogo.cn/g?b=qq&nk=1270701414&s=100&t=" alt="" />
+        <br />
+        <span style="color: #666;">点击更换头像</span>
+    </div>
+
+    <van-cell-group>
+        <van-field v-model="user.nickname" label="用户名" placeholder="请输入用户名"></van-field>
+    </van-cell-group>
+    <van-cell-group>
+        <van-field v-model="user.sign" label="签名" placeholder="请输入用户名"></van-field>
+    </van-cell-group>
+    <van-cell-group>
+        <van-field name="sex" label="性别">
+            <template #input>
+                <van-radio-group v-model="user.sex" direction="horizontal">
+                    <van-radio name="m">男</van-radio>
+                    <van-radio name="w">女</van-radio>
+                </van-radio-group>
+            </template>
+        </van-field>
+    </van-cell-group>
+    <van-cell-group>
+        <van-field v-model="user.born" type="date" label="出生日期" placeholder="请输入用户名"></van-field>
+    </van-cell-group>
+
+    <div style="margin: 1rem;">
+        <van-button round block type="info" @click="saveInfo">
+          提交
+        </van-button>
+    </div>
+</div>
+<script>
+
+    //导入组件 form vant
+    App.use(['RadioGroup', 'Radio'], vant);
+
+    //定义Vue实例
+    page.uhome.upopup = new Vue({
+        el: '#user-popup',
+        data: {
+            user: page.uhome.user,
+            showCalendar: false,
+            date: ''
+        },
+        methods: {
+            onClickLeft: function(){
+                page.uhome.show_popup = false;
+            },
+            onLogout: function(){
+                $.ajax({
+                    url: App.href + 'index/user/logout',
+                    success: function (ret) {
+                        vant.Toast(ret.message);
+                        setTimeout(function(){
+                            page.uhome.show_popup = false;
+                            page.uhome.getInfo();
+                        }, 500);
+                    },
+                    error: function() {
+                        vant.Toast.fail('网络错误');
+                    }
+                });
+            },
+            saveInfo: function(){
+                $.ajax({
+                    url: App.href + 'index/user/updateInfo',
+                    method: 'POST',
+                    data: {
+                        nickname: this.user.nickname,
+                        sign: this.user.sign,
+                        sex: this.user.sex,
+                        born: this.user.born
+                    },
+                    success: function(ret) {
+                        vant.Toast(ret.message);
+                        if(ret.status)
+                        setTimeout(function(){
+                            page.uhome.show_popup = false;
+                        }, 500);
+                    },
+                    error: function() {
+                        vant.Toast.fail('网络错误');
+                    }
+                });
+            }
+        },
+        watch: {
+            // 'user.info': function(){
+            //     alert(this.user.sex)
+            // }
+        }
+    });
+
+</script>

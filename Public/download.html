@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>下载客户端</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <meta content="yes" name="apple-mobile-web-app-capable" />
+    <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+    <meta content="telephone=no" name="format-detection" />
+    <link rel="stylesheet" href="/static/extend/download/appdown.css" />
+</head>
+<body>
+<img src="/static/extend/download/bg_1.png" class="pos-img"/>
+<header class="header box">
+    <img src="/favicon.ico"/>
+    <div style="font-size: 20px;padding: 5px 0 0 5px;">小猿社</div>
+    <div class="flex"></div>
+</header>
+<div class="fs-29 fc-43 fm-sun fw-b">
+    有趣内容 就在身边
+</div>
+<div class="fs-15 fc-66 mg19-t">
+    同城互动 交友乐趣
+</div>
+<div class="fs-19 fc-33 mg35-t fm-sun fw-b">
+    社团模式 兴趣相投
+</div>
+<div class="fs-15 fc-66 mg14-t">
+    用户可自主申请创建社团,认识更多有趣的人
+</div>
+<div class="mg20-t">
+    <img src="/static/extend/download/bg_2.png" class="con-img"/>
+</div>
+<div class="download" onclick="down()">
+    立即下载
+</div>
+<div class="ps box">
+    <div class="flex">
+    </div>
+    <div class="mg50-r">
+        <div class="fc-33 fm-sun mg10-t fw-b">
+            神秘福利
+        </div>
+        <div class="fc-66 fs-12 mg24-t">
+            不定期发放各种福利
+        </div>
+        <div class="fc-66 fs-12 mg7-t text-right">
+            来了就有你
+        </div>
+    </div>
+    <div class="icon mg24-r">
+        <img src="/static/extend/download/ico_1.png"/>
+    </div>
+</div>
+<div class="ps box mg70-t">
+    <div class="icon mg24-l">
+        <img src="/static/extend/download/ico_2.png"/>
+    </div>
+    <div class="mg50-l">
+        <div class="fc-33 fm-sun mg10-t fw-b">
+            智能推荐 看您所想
+        </div>
+        <div class="fc-66 fs-12 mg24-t">
+            时尚设计，个性导航，创意投递
+        </div>
+    </div>
+    <div class="flex">
+    </div>
+</div>
+<!--<div class="ps box mg70-t mg50-b">-->
+<!--    <div class="flex">-->
+<!--    </div>-->
+<!--    <div class="mg50-r">-->
+<!--        <div class="fc-33 fm-sun mg10-t fw-b">-->
+<!--            xxxx xxxx-->
+<!--        </div>-->
+<!--        <div class="fc-66 fs-12 mg24-t">-->
+<!--            xxxxxxxxx-->
+<!--        </div>-->
+<!--        <div class="fc-66 fs-12 mg7-t text-right">-->
+<!--            xxxx-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    <div class="icon mg24-r">-->
+<!--        <img src="/static/extend/download/ico_3.png"/>-->
+<!--    </div>-->
+<!--</div>-->
+</body>
+<!--<script type="text/javascript" src="/static/extend/download/jquery-2.0.3.min.js"></script>-->
+<!--<script src="/static/extend/download/layer.js"></script>-->
+<script type="text/javascript">
+
+    function down(){
+        var downloadurl = 'https://A6157104583791.qiniucdn.apicloud-system.com/80aecfce8b11e51c035e901d33de5399_d';
+        var iswx = '';
+        var u = navigator.userAgent;
+        var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1; //android终端
+        var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+        if(isiOS){
+            window.location.href = downloadurl;
+        }
+        if(isAndroid && iswx){
+            alert('点击右上角的“...”选择在浏览器中打开')
+            // layer.msg('点击右上角的“...”选择在浏览器中打开',{anim: 4});
+        }else{
+            window.location.href = downloadurl;
+        }
+    }
+
+    // $(".download").on("click",function(){
+    //     var downloadurl = 'http://appdata.shuhai.com/ishuhai/app/download?packagename=com.shuhai.bookos&qd=aladdin';
+    //     var iswx = '';
+    //     var u = navigator.userAgent;
+    //     var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1; //android终端
+    //     var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+    //     if(isiOS){
+    //         window.location.href = downloadurl;
+    //     }
+    //     if(isAndroid && iswx){
+    //         layer.msg('点击右上角的“...”选择在浏览器中打开',{anim: 4});
+    //     }else{
+    //         window.location.href = downloadurl;
+    //     }
+    //
+    // })
+</script>
+</html>

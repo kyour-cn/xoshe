@@ -1,0 +1,160 @@
+
+<div>
+    <van-search v-model="search" placeholder="请输入搜索关键词" ></van-search>
+    <van-tabs v-model="active" sticky>
+        <van-tab title="关注">
+            <van-empty image="search" description="暂无关注内容"></van-empty>
+        </van-tab>
+        <van-tab title="分类">
+            <van-sidebar
+                v-model="class_index"
+                @change="onChangeClass"
+                :style="{position:'absolute',height:(window.screen.availHeight - 150)+'px',overflow:'scroll'}"
+            >
+                <van-sidebar-item v-for="item in class_list" :title="item.name"></van-sidebar-item>
+            </van-sidebar>
+            <div :style="{'padding-left': '80px',height:(window.screen.availHeight - 160)+'px',overflow:'scroll'}">
+                <van-list
+                    v-model="mlist_loading"
+                    :finished="mlist_finished"
+                    finished-text="没有更多了"
+                    @load="onClassLoad"
+                >
+                    <van-cell v-for="item in class_mlist" :key="item" label="描述信息" @click="showClass(item.id)">
+                        <template #title>
+                            <span class="custom-title">{{item.name}}</span>
+                            <!--<van-tag type="danger">标签</van-tag>-->
+                        </template>
+                        <template #icon>
+                            <van-icon :name="item.icon" size="40" style="padding:0.3rem 0.3rem 0 0;"></van-icon>
+                        </template>
+                        <van-button size="mini">关注</van-button>
+                    </van-cell>
+                </van-list>
+            </div>
+        </van-tab>
+        <van-tab title="社团">社团</van-tab>
+        <van-tab title="附近">附近</van-tab>
+    </van-tabs>
+    
+</div>
+
+<!--弹出层-->
+<van-popup
+    v-model="show_popup"
+    @opened="loadPopup"
+    @close="closePopup"
+    position="right"
+    style="width:100%; height:100%;"
+>
+    <div id="discover-popup">
+    </div>
+</van-popup>
+
+<script>
+
+    //导入组件 form vant
+    App.use([
+    ], vant);
+
+    //定义Vue实例
+    page.discover = new Vue({
+        el: '#main-discover',
+        data: {
+            active: 1,
+            show_popup: false,
+            search: '',
+
+            //分类
+            class_list: [],
+            class_index: 0,
+
+            class_mlist: [],
+            mlist_loading: false,
+            mlist_finished: false,
+            mlist_page: 1,
+            refreshing: false
+
+        },
+        methods: {
+            //载入弹出层
+            loadPopup: function(){
+                $('#release-popup').load(App.href + page.release.action);
+                App.addBack(function(){
+                    page.discover.show_popup = false;
+                });
+            },
+            //关闭弹出层
+            closePopup: function(){
+                if(page.release.upopup && page.release.upopup.$destroy) page.release.upopup.$destroy();
+                page.release.upopup = null;
+                $('#release-popup').empty();
+            },
+            onClassLoad: function(){
+                if(this.class_list.length === 0) return;
+                if(this.refreshing){
+                    this.class_mlist = [];
+                    this.refreshing = false;
+                }
+                App.es.ajax({
+                    cmd: 'index.posts.classList',
+                    data: {
+                        pid: this.class_list[this.class_index].id,
+                        page: this.mlist_page
+                    }
+                },function(ret, err){
+                    if(ret){
+                        var _this = page.discover;
+                        if(ret.code == 0){
+                            if(ret.result.list.length === 0){
+                                _this.mlist_finished = true; //加载结束
+                            }
+                            for(var i in ret.result.list){
+                                _this.class_mlist.push(ret.result.list[i]);
+                            }
+                            _this.mlist_page += 1;
+
+                        }else{
+                            _this.mlist_finished = true; //加载结束
+                        }
+                        _this.mlist_loading = false;
+                    }else{
+                        vant.Toast('网络错误');
+                    }
+                });
+            },
+            onChangeClass: function(index){
+                this.mlist_page = 1;
+                this.mlist_finished = false; //启用加载
+                this.mlist_loading = true;
+                this.refreshing = true; // 刷新
+                this.onClassLoad();
+
+            },
+            //查看分类帖子
+            showClass:function(id){
+                vant.Toast(id);
+            }
+        }
+    });
+
+    (function(){
+        //获取主分类栏目
+        App.es.ajax({
+            cmd: 'index.posts.classList'
+        },function(ret, err){
+            if(ret){
+                if(ret.code == 0){
+                    page.discover.class_list = ret.result.list;
+                    page.discover.onClassLoad();
+                }else{
+                    page.discover.class_list = [];
+                }
+            }else{
+                vant.Toast('网络错误');
+            }
+        });
+
+    })();
+
+</script>

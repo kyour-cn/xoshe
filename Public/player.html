@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, initial-scale=1.0, width=device-width"/>
+    <meta name="format-detection" content="telephone=no, email=no, date=no, address=no">
+
+    <link rel="stylesheet" href="/static/extend/vant/vant.min.css" />
+    <style type="text/css" media="all">
+        .wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #eee;
+        }
+    </style>
+</head>
+<body>
+
+    <section id="v-page">
+    </section>
+
+    <div id="app-view">
+        <van-overlay :show="overlay">
+            <div class="wrapper">
+                加载中
+            </div>
+        </van-overlay>
+    </div>
+
+    <script src="/static/extend/js/jquery-ajax.min.js"></script>
+    <script src="/static/extend/js/vue.min.js"></script>
+    <script src="/static/extend/vant/vant.min.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/extend/vue-video/vue-video-player.js"></script>
+    <script type="text/javascript" charset="utf-8">
+
+    App.name = '皮小猿';
+    App.href = 'http://mk.kyour.cn/';
+    App.host = 'mk.kyour.cn';
+
+    //导入组件 form vant
+    App.use(['Overlay', 'Button', 'NavBar', 'Col', 'Row', 'Empty', 'Icon'], vant);
+
+    //页面vue实例
+    var page = null;
+
+    App.view = new Vue({
+        el: '#app-view',
+        data: {
+            title: '',
+            //加载遮罩
+            overlay: true
+        }
+    });
+
+    $(()=>{
+
+        App.setTitle(App.name);
+
+        //取出当前地址
+        let href = window.location.href;
+        let index = href.indexOf("#");
+        if(index == -1){
+            index = href.length;
+        }
+
+        let url = href.substr(index +1);
+
+        if(url){
+            //加载新模板页面
+            App.open(url);
+        }else{
+            //加载新模板页面
+            App.open('index/player');
+        }
+        // 监听地址栏变化
+        
+// window.addEventListener("popstate", function(e) { 
+// alert("我监听到了浏览器的返回按钮事件啦");//根据自己的需求实现自己的功能 
+// }, false);
+
+    });
+
+    if('apiready' in window){
+        apiready = function(){
+            api.addEventListener({
+                name: 'keyback'
+            }, function(ret, err) {
+                alert('按了返回键');
+            });
+        }
+        // alert(api.safeArea.top + 'px')
+        // document.body.style.paddingTop = api.safeArea.top + 'px';
+        // App.loadRes('', 'js');
+    }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: xcg
+ * Date: 2019/10/16
+ * Time: 14:48
+ */
+
+namespace EasySwoole\DDL\Filter\Zerofill;
+
+
+use EasySwoole\DDL\Blueprint\AbstractInterface\ColumnInterface;
+use EasySwoole\DDL\Contracts\FilterInterface;
+
+class FilterFloat implements FilterInterface
+{
+
+    public static function run(ColumnInterface $column)
+    {
+
+    }
+}

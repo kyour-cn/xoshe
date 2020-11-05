@@ -1,0 +1,405 @@
+
+<div>
+    <van-nav-bar
+        title="发布内容"
+        left-text="返回"
+        left-arrow
+        @click-left="onClickLeft"
+    ></van-nav-bar>
+
+    <van-form @submit="onSubmit" id="reform">
+        <van-field
+            v-model="content"
+            name="content"
+            rows="4"
+            type="textarea"
+            maxlength="500"
+            placeholder="请输入文字内容"
+            show-word-limit
+        ></van-field>
+
+        <div style="margin: 0.75rem;">
+            <div class="van-uploader" v-if="('api' in window)">
+                <div class="van-uploader__wrapper">
+                    <div class="van-uploader__preview" v-for="(item,i) in apifileList">
+                        <div class="van-image van-uploader__preview-image">
+                            <img :src="item.thumbPath" @click="showImg" class="van-image__img" style="object-fit: cover;">
+                        </div>
+                        <div class="van-uploader__preview-delete" @click="removeFile(i)">
+                            <i class="van-icon van-icon-cross van-uploader__preview-delete-icon"></i>
+                        </div>
+                    </div>
+                    <div class="van-uploader__upload" @click="selectApiFile()">
+                        <i class="van-icon van-icon-photograph van-uploader__upload-icon"></i>
+                    </div>
+                </div>
+            </div>
+    
+            <van-uploader
+                v-else
+                v-model="fileList"
+                :max-count="9"
+                :max-size="3 * 1024 * 1024"
+                @oversize="onOversize"
+                multiple
+                accept=".jpg,.png"
+            ></van-uploader>
+
+            <van-field
+                readonly
+                clickable
+                :value="className"
+                label="选择分类"
+                placeholder="点击选择分类"
+                @click="showPicker = true"
+            ></van-field>
+            <van-popup
+                v-model="showPicker"
+                position="bottom"
+                style="height:90%;"
+            >
+                <van-search
+                    v-model="searchClass"
+                    show-action
+                    placeholder="请输入搜索关键词"
+                    @cancel="onCancel"
+                ></van-search>
+                <!--分类列表-->
+                <van-sidebar
+                    v-model="class_index"
+                    @change="onChangeClass"
+                    :style="{position:'absolute',height:(window.screen.availHeight - 150)+'px',overflow:'scroll'}"
+                >
+                    <van-sidebar-item v-for="item in class_list" :title="item.name"></van-sidebar-item>
+                </van-sidebar>
+                <div :style="{'padding-left': '80px',height:(window.screen.availHeight - 160)+'px',overflow:'scroll'}">
+                    <van-list
+                        v-model="mlist_loading"
+                        :finished="mlist_finished"
+                        finished-text="没有更多了"
+                        @load="onClassLoad"
+                    >
+                        <van-cell v-for="item in class_mlist" :key="item" label="描述信息" @click="changeClass(item.id, item.name)">
+                            <template #title>
+                                <span class="custom-title">{{item.name}}</span>
+                                <!--<van-tag type="danger">标签</van-tag>-->
+                            </template>
+                            <template #icon>
+                                <van-icon :name="item.icon" size="40" style="padding:0.3rem 0.3rem 0 0;"></van-icon>
+                            </template>
+                        </van-cell>
+                    </van-list>
+                </div>
+
+            </van-popup>
+        </div>
+
+        <div style="margin: 1rem;">
+            <van-button round block type="info">
+              提交
+            </van-button>
+        </div>
+    </van-form>
+</div>
+<script>
+
+    //导入组件 form vant
+    App.use(['Uploader', 'Picker'], vant);
+
+    App.temp.isAc = ('api' in window);
+
+    if(!App.temp.isAc){
+        vant.Dialog.confirm({
+            title: '检测您在浏览器运行',
+            message: '浏览器无法上传视频，为体验完整功能，请下载App',
+        })
+        .then(function () {
+            location.href = '/download';
+        })
+        .catch(function () {
+            if(App.temp.releaseType === 'video'){
+                page.release.show_popup = false;
+            }
+        });
+    }
+
+    //定义Vue实例
+    page.release.upopup = new Vue({
+        el: '#release-popup',
+        data: {
+            content: '',
+            fileList: [], //web文件列表
+            apifileList: [], //apicloud文件列表
+            classId: '',
+            className: '',
+
+            //分类
+            class_list: [],
+            class_index: 0,
+
+            class_mlist: [],
+            mlist_loading: false,
+            mlist_finished: false,
+            mlist_page: 1,
+
+            searchClass: '', //搜索内容
+            searched: true, //搜索频率限制
+            showPicker: false,
+            refreshing: false
+        },
+        methods: {
+            onClickLeft: function(){
+                page.release.show_popup = false;
+            },
+            onOversize: function(){
+                vant.Toast('单文件大小不超过 3MB');
+            },
+            //图片预览
+            showImg: function(e){
+                vant.ImagePreview([e.currentTarget.src]);
+            },
+            selectApiFile: function(){
+                //调用Api
+                var UIAlbumBrowser = api.require('UIAlbumBrowser');
+                UIAlbumBrowser.open({
+                    max: App.temp.releaseType === 'img'?9:1, //image video,
+                    type: App.temp.releaseType === 'img'?'image':'video', //image video
+                    styles: {
+                        bg: '#fff',
+                        mark: {
+                            icon: '',
+                            position: 'bottom_left',
+                            size: 20
+                        },
+                        nav: {
+                            bg: '#555',
+                            titleColor: '#fff',
+                            titleSize: 18,
+                            cancelColor: '#fff',
+                            cancelSize: 16,
+                            finishColor: '#fff',
+                            finishSize: 16
+                        }
+                    },
+                    rotation: true
+                }, function(ret) {
+                    if (ret.eventType === 'confirm') {
+                        if(ret.list.length){
+                            for(var i in ret.list){
+                                if(
+                                    ("img" === App.temp.releaseType && page.release.upopup.apifileList.length >= 9)
+                                    ||
+                                    ("video" === App.temp.releaseType && page.release.upopup.apifileList.length >= 1)
+                                ){
+                                    vant.Toast('选择文件达到上限');
+                                    break;
+                                }
+                                page.release.upopup.apifileList.push(ret.list[i]);
+                            }
+                        }
+                    }
+                });
+            },
+            //移除文件
+            removeFile: function(i){
+                this.apifileList.splice(i,1);
+            },
+            //分类选择返回
+            onCancel: function(){
+                this.showPicker = false;
+            },
+            changeClass: function(id, name){
+                this.onCancel();
+                this.classId = id;
+                this.className = name;
+            },
+            //提交
+            onSubmit: function(values){
+                //表单验证
+                if(!this.content){
+                    return vant.Toast.fail('请填写内容');
+                }
+                if(!this.classId){
+                    return vant.Toast.fail('请选择分类');
+                }
+                var formData;
+
+                vant.Toast.loading({
+                    message: '上传中,请勿退出...',
+                    forbidClick: true,
+                    loadingType: 'spinner',
+                    duration: 0
+                });
+                var url = App.href + 'index/Release/formHandle';
+
+                if('api' in window){
+
+                    formData  = {
+                        values: {
+                            class: this.classId
+                        },
+                        files: {}
+                    };
+
+                    for(var i in values){
+                        formData.values[i] = values[i];
+                    }
+                    delete formData.values['undefined'];
+                    //添加类型
+                    formData.values['type'] = this.apifileList.length ? App.temp.releaseType:'text';
+
+                    if(App.temp.releaseType === 'img'){
+                        //生成图片数组
+                        for(var i in this.apifileList){
+                            formData.files['file'+i] = this.apifileList[i].path;
+                        }
+                    }else{
+                        for(var i in this.apifileList) {
+                            formData.files['video'] = this.apifileList[i].path;
+                            formData.files['thumb'] = this.apifileList[i].thumbPath;
+                        }
+                    }
+                    //App提交
+                    vant.Toast.clear();
+                    api.ajax({
+                        url: url,
+                        method: 'post',
+                        data: formData,
+                        timeout: 300, //超时秒
+                        report: true
+                    },function(ret, err) {
+                        if (ret.status === 1) {
+                            api.hideProgress();
+                            vant.Toast(ret.body.message);
+                            if(ret.body.status)
+                                setTimeout(function(){
+                                    page.release.show_popup = false;
+                                }, 500);
+
+                        }else if(ret.status === 2){
+                            api.hideProgress();
+                            vant.Toast.clear();
+                            vant.Toast.fail('网络错误');
+                            alert(err.body)
+                        }else{
+                            api.showProgress({
+                                title: '正在上传中...',
+                                text: ret.progress === 100 ? '上传完成，正在处理中，请勿退出': ret.progress +'%',
+                                modal: true
+                            });
+                        }
+                    });
+
+                }else{
+                    //h5提交
+                    formData = new FormData();
+                    formData.append('class', this.classId);
+                    for(var i in values){
+                        formData.append(i, values[i]);
+                    }
+
+                    var fl = page.release.upopup.fileList;
+                    //添加类型
+                    formData.set('type', fl.length?'img':'text');
+                    //遍历添加
+                    for(var i in fl){
+                        formData.append('pic'+i, fl[i].file);
+                    }
+
+                    $.ajax({
+                        url: url,
+                        method: 'POST',
+                        data: formData,
+                        processData: false,  // 不处理数据
+                        contentType: false,  // 不设置内容类型
+                        success: function(ret) {
+                            vant.Toast.clear();
+                            vant.Toast(ret.message);
+                            if(ret.status)
+                                setTimeout(function(){
+                                    page.release.show_popup = false;
+                                }, 500);
+                        },
+                        error: function() {
+                            vant.Toast.clear();
+                            vant.Toast.fail('网络错误');
+                        }
+                    });
+                }
+            },
+            //分类查询
+            onClassLoad: function(){
+                if(this.class_list.length === 0) return;
+                if(this.refreshing){
+                    this.class_mlist = [];
+                    this.refreshing = false;
+                }
+                App.es.ajax({
+                    cmd: 'index.posts.classList',
+                    data: {
+                        pid: this.class_list[this.class_index].id,
+                        page: this.mlist_page
+                    }
+                },function(ret, err){
+                    if(ret){
+                        var _this = page.release.upopup;
+
+                        if(ret.code == 0){
+                            if(ret.result.list.length === 0){
+                                _this.mlist_finished = true; //加载结束
+                            }
+                            for(var i in ret.result.list){
+                                _this.class_mlist.push(ret.result.list[i]);
+                            }
+                            _this.mlist_page += 1;
+
+                        }else{
+                            _this.mlist_finished = true; //加载结束
+                        }
+                        _this.mlist_loading = false;
+                    }else{
+                        vant.Toast('网络错误');
+                    }
+                });
+            },
+            onChangeClass: function(index){
+                this.mlist_page = 1;
+                this.mlist_finished = false; //启用加载
+                this.mlist_loading = true;
+                this.refreshing = true; // 刷新
+                this.onClassLoad();
+            }
+        },
+        watch: {
+            //搜索输入
+            searchClass: function(val){
+                if(this.searched === false) return;
+                this.searched = false;
+                setTimeout(function () {
+                    //重载
+                    page.release.upopup.onChangeClass();
+                },500);
+            }
+        }
+    });
+
+    (function(){
+        //获取主分类栏目
+        App.es.ajax({
+            cmd: 'index.posts.classList'
+        },function(ret, err){
+            if(ret){
+                if(ret.code === 0){
+                    page.release.upopup.class_list = ret.result.list;
+                    page.release.upopup.onClassLoad();
+                }else{
+                    page.release.upopup.class_list = [];
+                }
+            }else{
+                vant.Toast('网络错误');
+            }
+        });
+
+    })();
+
+</script>

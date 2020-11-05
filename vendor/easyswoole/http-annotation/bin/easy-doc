@@ -1,0 +1,39 @@
+#!/usr/bin/env php
+<?php
+
+$file = null;
+foreach ([ __DIR__ . '/../../../autoload.php', __DIR__ . '/../vendor/autoload.php' ] as $file) {
+    if (file_exists($file)) {
+        require $file;
+        break;
+    }
+}
+if(!file_exists($file)){
+    die("include composer autoload.php fail\n");
+}
+
+
+use EasySwoole\HttpAnnotation\Utility\AnnotationDoc;
+
+$array = $argv;
+array_shift($array);
+$file = array_shift($array);
+if(empty($file)){
+    $file = 'App/HttpController';
+}
+$extra = array_shift($array);
+if(!empty($extra) && is_file($extra)){
+    $extra = file_get_contents($extra);
+}else{
+    $extra = null;
+}
+
+echo "scan dir: {$file}\n";
+$string = (new AnnotationDoc())->scan2Html($file,$extra);
+
+if(!empty($string)){
+    file_put_contents('easyDoc.html',$string);
+    echo "extra to  file: easyDoc.html\n";
+}else{
+    echo "no any api doc found\n";
+}

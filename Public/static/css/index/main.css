@@ -1,0 +1,128 @@
+
+/* =================首页样式=================*/
+.van-tab--active span {
+    font-weight: 700;
+}
+
+.van-tabs__line {
+    width: 1rem;
+}
+
+/*底部+按钮*/
+.van-tabbar-item__icon .van-icon-add-o {
+    padding-top: 0.6rem;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #f33;
+}
+
+.main-call {
+    padding: 10px 16px;
+}
+
+.article-tag {
+    padding: 0.4rem;
+    background-color: #fff3f3;
+    border-radius: 0.7rem;
+    font-size: 0.75rem;
+    display: inline;
+}
+.article-tag .van-icon {
+    color: #e64e77;
+    font-size: 1rem;
+    top: 0.2rem;
+}
+.no-gridpadd .van-grid-item__content {
+    padding: 0.1rem;
+}
+
+.article-text {
+    padding: 0 1rem;
+}
+
+.list .van-icon__image {
+    width: 1.6rem;
+    height: 1.6rem;
+    margin-right: 0.5rem;
+}
+
+.rotate {
+    transform: rotateX(180deg);
+}
+
+.article-btn-l {
+    line-height: 19px;
+    padding-right: 0.6rem;
+    font-size: 1rem;
+}
+.article-btn-r {
+    color: #fe698d;
+    float: right;
+    line-height: 19px;
+    padding-left: 1rem;
+    font-size: 0.75rem;
+}
+
+.article-btn-l .van-icon, .article-btn-r .van-icon {
+    padding: 0.1rem;
+    /*font-weight: 500;*/
+}
+
+.avatar .van-icon__image{
+    border-radius: 0.2rem;
+}
+.avatar-big .van-icon__image{
+    width: 2rem;
+    height: 2rem;
+    margin-right: 0.5rem;
+    border-radius: 0.5rem;
+}
+.border img{
+    border-radius: 0.2rem;
+}
+
+/*小视频播放器*/
+.small-video{
+    position:relative;
+}
+.small-video video{
+    width:100%;
+    height:100%;
+    /*object-fit:scale-down;*/
+    border-radius: 5px;
+}
+.small-video .vpalse{
+    position: absolute;
+    z-index: 1;
+    width:50px;
+    top:40%;
+    left:42%;
+}
+
+/* =================用户中心=================*/
+
+.my-grid .van-grid-item__content--center{
+    background-color: rgba(0,0,0,0);
+}
+
+.my-navbar{
+    position:fixed;
+    top:0;
+    float: left;
+    width: 100%;
+    margin-left:1rem;
+    height: 2rem;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+/* =================发布页=================*/
+
+.my-swipe .van-swipe-item {
+    /*color: #fff;*/
+    /*font-size: 20px;*/
+    /*line-height: 150px;*/
+    text-align: center;
+    /*background-color: #39a9ed;*/
+    height: 10rem;
+}
