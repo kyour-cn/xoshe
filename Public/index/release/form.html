@@ -1,5 +1,5 @@
 
-<div>
+<template>
     <van-nav-bar
         title="发布内容"
         left-text="返回"
@@ -85,7 +85,7 @@
                                 <!--<van-tag type="danger">标签</van-tag>-->
                             </template>
                             <template #icon>
-                                <van-icon :name="item.icon" size="40" style="padding:0.3rem 0.3rem 0 0;"></van-icon>
+                                <van-icon :name="App.res + item.icon" size="40" style="padding:0.3rem 0.3rem 0 0;"></van-icon>
                             </template>
                         </van-cell>
                     </van-list>
@@ -100,15 +100,13 @@
             </van-button>
         </div>
     </van-form>
-</div>
+</template>
 <script>
 
     //导入组件 form vant
     App.use(['Uploader', 'Picker'], vant);
 
-    App.temp.isAc = ('api' in window);
-
-    if(!App.temp.isAc){
+    if(!App.isApp){
         vant.Dialog.confirm({
             title: '检测您在浏览器运行',
             message: '浏览器无法上传视频，为体验完整功能，请下载App',
@@ -159,11 +157,12 @@
                 vant.ImagePreview([e.currentTarget.src]);
             },
             selectApiFile: function(){
+                var _this = this,_type = App.temp.releaseType;
                 //调用Api
-                var UIAlbumBrowser = api.require('UIAlbumBrowser');
-                UIAlbumBrowser.open({
-                    max: App.temp.releaseType === 'img'?9:1, //image video,
-                    type: App.temp.releaseType === 'img'?'image':'video', //image video
+                var ui_ab = api.require('UIAlbumBrowser');
+                ui_ab.open({
+                    max: _type === 'img'?9:1, //image video,
+                    type: _type === 'img'?'image':'video', //image video
                     styles: {
                         bg: '#fff',
                         mark: {
@@ -187,14 +186,14 @@
                         if(ret.list.length){
                             for(var i in ret.list){
                                 if(
-                                    ("img" === App.temp.releaseType && page.release.upopup.apifileList.length >= 9)
+                                    ("img" === _type && _this.apifileList.length >= 9)
                                     ||
-                                    ("video" === App.temp.releaseType && page.release.upopup.apifileList.length >= 1)
+                                    ("video" === _type && _this.apifileList.length >= 1)
                                 ){
                                     vant.Toast('选择文件达到上限');
                                     break;
                                 }
-                                page.release.upopup.apifileList.push(ret.list[i]);
+                                _this.apifileList.push(ret.list[i]);
                             }
                         }
                     }
@@ -215,6 +214,7 @@
             },
             //提交
             onSubmit: function(values){
+                var _this = this;
                 //表单验证
                 if(!this.content){
                     return vant.Toast.fail('请填写内容');
@@ -292,35 +292,47 @@
 
                 }else{
                     //h5提交
+                    /*
                     formData = new FormData();
                     formData.append('class', this.classId);
                     for(var i in values){
                         formData.append(i, values[i]);
                     }
 
-                    var fl = page.release.upopup.fileList;
+                    var fl = this.fileList;
                     //添加类型
                     formData.set('type', fl.length?'img':'text');
                     //遍历添加
                     for(var i in fl){
                         formData.append('pic'+i, fl[i].file);
                     }
+                    */
+                    formData = {
+                        class: this.classId,
+                    };
+                    for(var k in values){
+                        formData[k] = values[k];
+                    }
+                    formData.type = this.fileList.length?'img':'text';
 
-                    $.ajax({
+                    //遍历添加
+                    for(var i in this.fileList){
+                        formData['pic'+i] = this.fileList[i].file;
+                    }
+
+                    App.ajax({
                         url: url,
-                        method: 'POST',
-                        data: formData,
-                        processData: false,  // 不处理数据
-                        contentType: false,  // 不设置内容类型
-                        success: function(ret) {
+                        method: 'post',
+                        data: formData
+                    },function (ret, err) {
+                        if(ret){
                             vant.Toast.clear();
                             vant.Toast(ret.message);
                             if(ret.status)
                                 setTimeout(function(){
                                     page.release.show_popup = false;
                                 }, 500);
-                        },
-                        error: function() {
+                        }else{
                             vant.Toast.clear();
                             vant.Toast.fail('网络错误');
                         }
@@ -334,16 +346,19 @@
                     this.class_mlist = [];
                     this.refreshing = false;
                 }
+
+                var _this = this;
                 App.es.ajax({
-                    cmd: 'index.posts.classList',
+                    cmd: 'index.Discover.classList',
                     data: {
                         pid: this.class_list[this.class_index].id,
-                        page: this.mlist_page
+                        page: this.mlist_page,
+                        search: this.searchClass
                     }
                 },function(ret, err){
-                    if(ret){
-                        var _this = page.release.upopup;
 
+                    _this.searched = true;
+                    if(ret){
                         if(ret.code == 0){
                             if(ret.result.list.length === 0){
                                 _this.mlist_finished = true; //加载结束
@@ -375,31 +390,31 @@
             searchClass: function(val){
                 if(this.searched === false) return;
                 this.searched = false;
+                var _this = this;
                 setTimeout(function () {
                     //重载
-                    page.release.upopup.onChangeClass();
+                    _this.onChangeClass();
                 },500);
             }
+        },
+        mounted: function(){
+            var _this = this;
+
+            //获取主分类栏目
+            App.es.ajax({
+                cmd: 'index.Discover.classList'
+            },function(ret, err){
+                if(ret){
+                    if(ret.code === 0){
+                        _this.class_list = ret.result.list;
+                    }else{
+                        _this.class_list = [];
+                    }
+                }else{
+                    vant.Toast('网络错误');
+                }
+            });
         }
     });
-
-    (function(){
-        //获取主分类栏目
-        App.es.ajax({
-            cmd: 'index.posts.classList'
-        },function(ret, err){
-            if(ret){
-                if(ret.code === 0){
-                    page.release.upopup.class_list = ret.result.list;
-                    page.release.upopup.onClassLoad();
-                }else{
-                    page.release.upopup.class_list = [];
-                }
-            }else{
-                vant.Toast('网络错误');
-            }
-        });
-
-    })();
 
 </script>

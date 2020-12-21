@@ -17,7 +17,7 @@
 }
 
 .main-call {
-    padding: 10px 16px;
+    padding: 0.5rem;
 }
 
 .article-tag {
@@ -38,6 +38,13 @@
 
 .article-text {
     padding: 0 1rem;
+    color: #444;
+}
+
+.article-views{
+    float: right;
+    font-size: 0.75rem;
+    color: #666;
 }
 
 .list .van-icon__image {
@@ -51,6 +58,7 @@
 }
 
 .article-btn-l {
+    color: #666;
     line-height: 19px;
     padding-right: 0.6rem;
     font-size: 1rem;
@@ -80,6 +88,9 @@
 .border img{
     border-radius: 0.2rem;
 }
+.vimg-wauto img{
+    width: auto;
+}
 
 /*小视频播放器*/
 .small-video{
@@ -99,10 +110,48 @@
     left:42%;
 }
 
+/*播放器进度条*/
+.progress{
+    z-index: 1;
+    height: 0.2rem;
+    background-color: rgba(200,200,200,0.3);
+    position: relative;
+    margin-top: -0.4rem;
+}
+.progress .p-load{
+    z-index: 2;
+    position: absolute;
+    height: 0.2rem;
+    background: rgba(244, 238, 190, 0.5);
+}
+.progress .p-now{
+    z-index: 3;
+    position: absolute;
+    height: 0.2rem;
+    background: rgba(244, 238, 190);
+}
+
+.comment-call{
+    padding: 0.25rem 1rem;
+}
+.comment-tool{
+    color:#8D8D8D;
+    font-size: 0.75rem;
+    padding-right: 0.5rem;
+}
+
+.comment-tool .van-button{
+    float: right;
+    color: #888 !important;
+}
+
 /* =================用户中心=================*/
 
 .my-grid .van-grid-item__content--center{
     background-color: rgba(0,0,0,0);
+}
+.my-grid .van-grid-item__content::after{
+    border-width: 0;
 }
 
 .my-navbar{
@@ -116,13 +165,84 @@
     margin-top: 0.5rem;
 }
 
+/* =================发现页=================*/
+
+.grid-block{
+    overflow-x:scroll;
+    white-space: nowrap;
+
+}
+.grid-item{
+    padding: 0.25rem;
+    display: inline-block;
+}
+.grid-item .grid-icon{
+    width: 3rem;
+    height: 3rem;
+    background: #ddd;
+    border-radius: 0.3rem;
+}
+.grid-item .grid-text{
+    text-align: center;
+    color: #666;
+    width: 4em;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 /* =================发布页=================*/
 
 .my-swipe .van-swipe-item {
-    /*color: #fff;*/
-    /*font-size: 20px;*/
-    /*line-height: 150px;*/
     text-align: center;
-    /*background-color: #39a9ed;*/
     height: 10rem;
+}
+
+/*vant扩展*/
+
+.call-avatar{
+    padding:0.3rem 0.3rem 0 0;
+}
+.call-avatar .van-icon__image{
+    border-radius: 0.45rem;
+}
+
+/* =================通用=================*/
+
+.divide-line{
+    margin: 0.1rem 0;
+    height: 0.25rem;
+    width: 100%;
+    background-color: #efefef;
+}
+
+/*内边距*/
+.padd25{
+    padding: 0.25rem;
+}
+.padd50{
+    padding: 0.5rem;
+}
+.padd100{
+    padding: 1.0rem;
+}
+
+.none{
+    padding: 0;
+    margin: 0;
+}
+
+/*灰色*/
+.c-grey{
+    color: #aaa;
+}
+
+/*模糊*/
+.filter{
+    background-size: 100% 100%;
+    -webkit-filter: blur(2px);
+    -moz-filter: blur(2px);
+    -o-filter: blur(2px);
+    -ms-filter: blur(2px);
+    filter: blur(2px);
 }

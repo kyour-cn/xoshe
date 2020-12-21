@@ -10,24 +10,32 @@
  */
 $config = [
     //类型 1:http 2:https 3:http+https
-    'type' => 3,
+    'type' => 1,
     //静态首页
-    'static_index' => false,
+    'static_index' => true,
     //http端口  第一个是外网端口，第二个是内网服务端口
     'http_port' => [80, 8105],
     //https端口 第一个是外网端口，第二个是内网服务端口
     'https_port' => [443, 8105],
     //外网访问域名 多个用空格分割
-    'host_name' => 'mk.kyour.cn',
+    'host_name' => 'www.xoshe.cn xoshe.cn xo.kyour.cn',
     //应用根目录 绝对路径，以/结尾
-    'root_path' => '/data/www/monkey/',
-    //静态资源目录
+    'root_path' => '/data/www/xoshe/',
+    //静态资源目录名称
     'public_path' => 'Public',
 
+    //websocket的url,为空则不开启,不支持'/'
+    'ws_url' => '/ws',
+
     //https的ssl证书文件（绝对路径） -仅开启https有效
-    'ssl_cer' => '/data/www/monkey/ssl/fullchain.cer',
+    'ssl_cer' => '/data/www/xoshe/ssl/fullchain.cer',
     //https的ssl密钥文件（绝对路径） -仅开启https有效
-    'ssl_key' => '/data/www/monkey/ssl/mk.kyour.cn.key',
+    'ssl_key' => '/data/www/xoshe/ssl/mk.kyour.cn.key',
+
+    //图片缓存时间
+    'img_cache' => '3d',
+    //资源文件缓存时间 （js、css、字体）
+    'res_cache' => '7d',
 ];
 
 // ===============================================================================================
@@ -44,12 +52,12 @@ server
 
     location ~ .*\.(gif|jpg|png|bmp|ico)$
     {
-        expires      7d;
+        expires      '.$config['img_cache'].';
     }
 
     location ~ .*\.(js|css|ttf)?$
     {
-        expires      7d;
+        expires      '.$config['res_cache'].';
     }
 
     location ~ .*\.(html|htm)$ {
@@ -57,15 +65,28 @@ server
         #禁止缓存，每次都从服务器请求
         #add_header Cache-Control no-store;
     }
-
-    location / {
+    '.
+    //判断是否存在ws_url
+    ($config['ws_url']?'
+    # Websocket支持
+    location '.$config['ws_url'].' {
         proxy_http_version 1.1;
-        #proxy_set_header Connection "keep-alive";
         proxy_set_header X-Real-IP $remote_addr;
 
         proxy_set_header Upgrade $http_upgrade;   # 升级协议头
         proxy_set_header Connection upgrade;
-
+        proxy_pass http://127.0.0.1:'.$config['http_port'][1].';
+    }
+    ':'').
+    '
+    location / {
+        proxy_http_version 1.1;
+        #proxy_set_header Connection "keep-alive";
+        proxy_set_header X-Real-IP $remote_addr;
+'.
+//        proxy_set_header Upgrade $http_upgrade;   # 升级协议头
+//        proxy_set_header Connection upgrade;
+'
         set $hfile "${request_filename}.html";
         set $falg 0;
 
@@ -118,12 +139,12 @@ server
 
     location ~ .*\.(gif|jpg|png|bmp|ico)$
     {
-        expires      7d;
+        expires      '.$config['img_cache'].';
     }
 
     location ~ .*\.(js|css|ttf)?$
     {
-        expires      7d;
+        expires      '.$config['res_cache'].';
     }
 
     location ~ .*\.(html|htm)$ {
@@ -131,15 +152,28 @@ server
         #禁止缓存，每次都从服务器请求
         #add_header Cache-Control no-store;
     }
-
-    location / {
+    '.
+    //判断是否存在ws_url
+    ($config['ws_url']?'
+    # Websocket支持
+    location '.$config['ws_url'].' {
         proxy_http_version 1.1;
-        #proxy_set_header Connection "keep-alive";
         proxy_set_header X-Real-IP $remote_addr;
 
         proxy_set_header Upgrade $http_upgrade;   # 升级协议头
         proxy_set_header Connection upgrade;
-
+        proxy_pass http://127.0.0.1:'.$config['http_port'][1].';
+    }
+    ':'').
+    '
+    location / {
+        proxy_http_version 1.1;
+        #proxy_set_header Connection "keep-alive";
+        proxy_set_header X-Real-IP $remote_addr;
+'.
+//        proxy_set_header Upgrade $http_upgrade;   # 升级协议头
+//        proxy_set_header Connection upgrade;
+'
         set $hfile "${request_filename}.html";
         set $falg 0;
 

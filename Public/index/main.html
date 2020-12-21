@@ -1,5 +1,5 @@
 
-<div>
+<template>
 
     <van-nav-bar v-show="navber" @click-right="onClickRight">
         <template #title>
@@ -7,25 +7,24 @@
         </template>
         <template #right>
             <!--<van-icon name="search" size="18"></van-icon>-->
-            跳转
         </template>
     </van-nav-bar>
 
     <div v-show="tabbar==0">
         <div id="main-page">
-            加载中
+            <van-loading size="40"></van-loading>
         </div>
     </div>
 
     <div v-show="tabbar==1">
         <div id="main-discover">
-            <span>加载中</span>
+            <van-loading size="40"></van-loading>
         </div>
     </div>
 
     <div v-show="tabbar==2">
         <div id="main-release">
-            <span>加载中</span>
+            <van-loading size="40"></van-loading>
         </div>
     </div>
 
@@ -38,16 +37,16 @@
 
     <div v-show="tabbar==4">
         <div id="user-home">
-            <span>加载中</span>
+            <van-loading size="40"></van-loading>
         </div>
     </div>
 
     <van-tabbar v-model="tabbar" placeholder>
-        <van-tabbar-item icon="home-o"   >{{tabs[0].name}}</van-tabbar-item>
-        <van-tabbar-item icon="search"   >{{tabs[1].name}}</van-tabbar-item>
+        <van-tabbar-item @click="refreshPage(0)" icon="home-o">{{tabs[0].name}}</van-tabbar-item>
+        <van-tabbar-item icon="search">{{tabs[1].name}}</van-tabbar-item>
         <van-tabbar-item icon="add-o" class="test"></van-tabbar-item>
         <van-tabbar-item icon="comment-o" dot>{{tabs[3].name}}</van-tabbar-item>
-        <van-tabbar-item icon="contact"  >{{tabs[4].name}}</van-tabbar-item>
+        <van-tabbar-item icon="contact">{{tabs[4].name}}</van-tabbar-item>
     </van-tabbar>
 
     <!--帖子弹出层-->
@@ -55,18 +54,18 @@
     <!--close-icon-position="top-left"-->
     <!--lazy-render = true-->
     <!--lock-scroll-->
-    <van-popup
-        v-model="popup_show"
-        position-xx="right"
-        lazy-render = false
-        position="bottom"
-        :style="{ height: '100%',width: '100%' }"
-        @opened="loadArticle"
-        @close="closeArticle"
-    >
-        <div id="article-page"></div>
-    </van-popup>
-</div>
+<!--    <van-popup-->
+<!--        v-model="popup_show"-->
+<!--        position-xx="right"-->
+<!--        lazy-render = false-->
+<!--        position="bottom"-->
+<!--        :style="{ height: '100%',width: '100%' }"-->
+<!--        @opened="loadArticle"-->
+<!--        @close="closeArticle"-->
+<!--    >-->
+<!--        <div id="article-page"></div>-->
+<!--    </van-popup>-->
+</template>
 <script>
     App.temp.isAc = ('api' in window);
 
@@ -100,7 +99,7 @@
 
             //内容显示页
             popup_show: false,
-            article: null, // 弹出层文章页
+            // article: null, // 弹出层文章页
 
             //底部导航栏
             tabs: [
@@ -113,26 +112,38 @@
         },
         methods: {
             onClickRight(){
-                App.open('index/hahaha');
+                // App.open('index/hahaha');
             },
             // 帖子相关
-            loadArticle(){
-                $('#article-page').load(App.href+'index/article/show');
-            },
-            closeArticle(){
-                if(page.article && page.article.$destroy) page.article.$destroy();
-                page.article = null;
-                $('#article-page').empty();
+            // loadArticle(){
+            //     console.log('loadArticle')
+            //     App.load('#article-page', App.href+'index/article/show');
+            // },
+            // closeArticle(){
+            //     if(page.article && page.article.$destroy) page.article.$destroy();
+            //     page.article = null;
+            //     $('#article-page').empty();
+            // },
+            //刷新页面
+            refreshPage: function (index){
+                if(index === this.tabbar && App.temp.mpageRefresh){
+                    page.mpage.refresh();
+                }
             }
         },
         watch: {
-            tabbar(index) {
-
+            tabbar: function(index){
+                //首页刷新验证机制
+                if(index == 0){
+                    App.temp.mpageRefresh = true;
+                }else{
+                    App.temp.mpageRefresh = false;
+                }
                 switch(index){
                     case 0: //首页
                         page.navber = false;
                         if(!page.mpage){
-                            $('#main-page').load(App.href+'index/article/list');
+                            App.load('#main-page', App.href+'index/article/list');
                         }else{
                             page.mpage.reboot && page.mpage.reboot();
                         }
@@ -140,7 +151,8 @@
                     case 1: //第二页
                         page.navber = false;
                         if(!page.discover){
-                            $('#main-discover').load(App.href+'index/discover/discover');
+                            App.load('#main-discover', App.href+'index/discover/discover');
+
                         }else{
                             page.discover.reboot && page.discover.reboot();
                         }
@@ -148,7 +160,7 @@
                     case 2: //发布
                         page.navber = true;
                         if(!page.release){
-                            $('#main-release').load(App.href+'index/release/release');
+                            App.load('#main-release', App.href+'index/release/release');
                         }else{
                             page.release.reboot && page.release.reboot();
                         }
@@ -159,7 +171,7 @@
                     case 4: //我的
                         page.navber = false;
                         if(!page.uhome){
-                            $('#user-home').load(App.href+'index/user/home');
+                            App.load('#user-home', App.href+'index/user/home')
                         }else{
                             page.uhome.reboot && page.uhome.reboot();
                         }
@@ -176,55 +188,47 @@
                 App.redirect('index/main-'+index);
 
                 //设置App状态栏背景
-                if('api' in window){
+                if(App.isApp){
                     api.sendEvent({
                         name: 'setStatusBarBgColor',
                         extra: {
                             color: index == 4?'#ff8c05':'#fff'
                         }
                     });
-                    api.setStatusBarStyle({
-                        style: index == 4?'light':'dark'
-                    });
+                    // api.setStatusBarStyle({
+                    //     style: index == 4?'light':'dark'
+                    // });
                 }
+            }
+        },
+        mounted: function(){
+
+            // 阻止返回
+            // if (window.history && window.history.pushState) {
+            //     $(window).on('popstate', function () {
+            //         window.history.forward(1);
+            //     });
+            // }
+
+            //根据地址栏参数切换页面
+            var url_page = App.formatRoute(App.getRoute())['param'];
+            var route = url_page.split('-');
+            if(route && route[0]){
+                this.tabbar = Number(route[0]);
+                if(route[1]){
+                    //路由加载
+                    switch(route[1]){
+                        case 'a': //帖子查看
+                            //设置显示的帖子Id
+                            localStorage.showArticle = route[2];
+                            break;
+                    }
+                }
+            }else{
+                var i = localStorage.main_index;
+                this.tabbar = Number(i?i:0);
             }
         }
     });
-
-    $(()=>{
-        // 阻止返回
-        // if (window.history && window.history.pushState) {
-        //     $(window).on('popstate', function () {
-        //         window.history.forward(1);
-        //     });
-        // }
-
-        //根据地址栏参数切换页面
-        var url_page = App.formatRoute(App.getRoute())['param'];
-        var route = url_page.split('-');
-        if(route){
-            page.tabbar = Number(route[0]);
-            if(route[1]){
-                //路由加载
-                switch(route[1]){
-                    case 'a': //帖子查看
-                        //设置显示的帖子Id
-                        localStorage.showArticle = route[2];
-                        break;
-                }
-            }
-        }else{
-            var i = localStorage.main_index;
-            page.tabbar = Number(i?i:0);
-        }
-
-    });
-
-    //重启App
-    function reApp(){
-        api.clearCache(function() {
-            api.rebootApp();
-        });
-    }
 
 </script>

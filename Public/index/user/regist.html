@@ -1,7 +1,5 @@
 
-<div>
-  <!--@click-left="onClickLeft"-->
-  <!--@click-right="onClickRight"-->
+<template>
     <van-nav-bar
         title="注册"
         left-text="返回"
@@ -10,6 +8,7 @@
         @click-left="onClickLeft"
         @click-right="onLogin"
     ></van-nav-bar>
+    <div style="height: 46px;"></div>
 
     <van-form @submit="onSubmit">
         <van-field
@@ -77,7 +76,7 @@
         </div>
     </van-form>
 
-</div>
+</template>
 <script>
 
     //导入组件 form vant
@@ -111,24 +110,26 @@
                     }
                 },1000);
 
+                var _this = this;
+
                 //接口请求
-                $.ajax({
-                    url: App.href + 'index/index/sendVerCode',
-                    method: 'POST',
+                App.ajax({
+                    url: 'index/index/sendVerCode',
+                    method: 'post',
                     data: {
                         phone: this.username,
                         imgcode: this.imgcode
-                    },
-                    success: function(ret) {
+                    }
+                },function (ret, err) {
+                    if(ret){
                         if(ret.status){
                             vant.Toast(ret.message);
                         }else{
-                            page.uhome.upopup.sendSleep = 0;
+                            _this.sendSleep = 0;
                             vant.Toast.fail(ret.message);
                         }
-                    },
-                    error: function() {
-                        page.uhome.upopup.sendSleep = 0;
+                    }else{
+                        _this.sendSleep = 0;
                         vant.Toast.fail('网络错误');
                     }
                 });
@@ -137,20 +138,21 @@
             onSubmit: function(values) {
                 if(this.loging) return;
                 this.loging = true;
-                $.ajax({
-                    url: App.href + 'index/user/registApi',
-                    method: 'POST',
+                var _this = this;
+                App.ajax({
+                    url: 'index/user/registApi',
+                    method: 'post',
                     data: values,
-                    success: function(ret) {
-                        page.uhome.upopup.loging = false;
+                },function (ret, err) {
+                    if(ret){
+                        _this.loging = false;
                         if(ret.status){
                             vant.Toast(ret.message);
-                            page.uhome.upopup.onLogin();
+                            _this.onLogin();
                         }else{
                             vant.Toast.fail(ret.message);
                         }
-                    },
-                    error: function() {
+                    }else{
                         vant.Toast.fail('网络错误');
                     }
                 });
@@ -161,7 +163,7 @@
             },
             onLogin: function(){
                 if(page.uhome.upopup && page.uhome.upopup.$destroy) page.uhome.upopup.$destroy();
-                $('#user-popup').load(App.href + 'index/user/login');
+                App.load('#user-popup',App.href + 'index/user/login');
             }
         }
     });

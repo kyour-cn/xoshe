@@ -6,3 +6,5 @@
 
 # 使用方法 保留两个参数启动ws服务
 # ./run start -d
+
+# ./run stop

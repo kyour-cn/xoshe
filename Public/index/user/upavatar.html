@@ -1,0 +1,152 @@
+
+<template>
+    <van-nav-bar
+        title="头像上传"
+        left-text="返回"
+        fixed
+        left-arrow
+        @click-left="onClickLeft"
+    ></van-nav-bar>
+    <div style="height: 46px;"></div>
+
+    <div style="text-align: center;padding: 2rem 0 0 0;" @click="selectPic">
+        <img style="border-radius: 50%;width: 100px;height: 100px;" :src="previews.url" />
+        <br />
+        <span style="color: #666;">点击选择头像</span>
+    </div>
+
+    <input type="file" accept="image/*" id="checkfile" @change="changeImg" multiple style="display: none;">
+
+    <div id="cropper">
+        <div :style="{margin: '30px auto',width: document.body.clientWidth*0.7+'px',height:document.body.clientWidth*0.7+'px'}">
+            <vue-cropper
+                ref="cropper" :img="option.img" :output-size="option.size" :output-type="option.outputType" :info="true" :full="option.full" :fixed="option.fixed"
+                :fixed-number="option.fixedNumber" :can-move="option.canMove" :can-move-box="option.canMoveBox" :fixed-box="option.fixedBox" :original="option.original"
+                :auto-crop="option.autoCrop" :auto-crop-width="option.autoCropWidth" :auto-crop-height="option.autoCropHeight" :center-box="option.centerBox"
+                @real-time="realTime" :high="option.high" mode="cover" :max-img-size="option.max" mode="cover"
+            ></vue-cropper>
+        </div>
+    </div>
+
+    <div style="margin: 1rem;">
+        <van-button round block type="info" @click="uploadImg">
+            提交
+        </van-button>
+    </div>
+</template>
+<script>
+
+    //开始加载
+    App.loadRes(App.href+ '/static/extend/js/cropper.min.js','js');
+
+    //验证是否加载完成
+    App.temp.load_cropper = function() {
+        if('vue-cropper' in window){
+            App.temp.load_croppered();
+            delete App.temp.load_cropper;
+            delete App.temp.load_croppered;
+        }else{
+            //再检测
+            setTimeout(App.temp.load_cropper, 50)
+        }
+    };
+
+    //加载完成
+    App.temp.load_croppered = function(){
+
+        //导入组件 form vant
+        App.use(['RadioGroup', 'Radio'], vant);
+        App.use(['vue-cropper'], window);
+
+        //定义Vue实例
+        page.uhome.upopup = new Vue({
+            el: '#user-popup',
+            data: {
+                modelSrc: '',
+                previews: {
+                    url: App.local+ 'static/image/select-pic.png'
+                },
+                option: {
+                    img: '',
+                    size: 1,
+                    full: false,
+                    outputType: 'jpeg',
+                    canMove: true,
+                    fixedBox: false,
+                    original: false,
+                    canMoveBox: true,
+                    autoCrop: true,
+                    // 只有自动截图开启 宽度高度才生效
+                    autoCropWidth: 200,
+                    autoCropHeight: 200,
+                    centerBox: true,
+                    high: true,
+                    max: 1000,
+                    fixed: true,
+                    fixedNumber: [1, 1]
+                }
+            },
+            methods: {
+                onClickLeft: function(){
+                    page.uhome.show_popup = false;
+                },
+                //选择图片
+                changeImg: function(e){
+                    if(!e.target.files || !e.target.files[0]){
+                        return;
+                    }
+                    var reader = new FileReader();
+                    var _this = this;
+                    reader.onload = function (e) {
+                        _this.previews.url = e.target.result;
+                        _this.option.img = e.target.result;
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                },
+                // 实时预览函数
+                realTime(data) {
+                    // if(data.url){
+                    //     this.previews = data;
+                    // }
+                },
+                uploadImg(e) {
+                    var _this = this;
+                    this.$refs.cropper.getCropData(function(data){
+                        _this.modelSrc = data;
+                        _this.saveInfo();
+                    })
+                },
+                saveInfo: function(){
+
+                    App.ajax({
+                        url: 'index/user/upAvatar',
+                        method: 'post',
+                        data: {
+                            avatar: this.modelSrc
+                        }
+                    },function (ret, err) {
+                        if(ret){
+                            vant.Toast(ret.message);
+                            if(ret.status)
+                                setTimeout(function(){
+                                    page.uhome.show_popup = false;
+                                }, 500);
+                        }else{
+                            vant.Toast.fail('网络错误');
+                        }
+                    });
+
+                },
+                //选择文件
+                selectPic: function(){
+                    App.dom('#checkfile').click();
+                }
+            }
+        });
+
+    }
+
+    //开始检测
+    App.temp.load_cropper();
+
+</script>

@@ -1,7 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 namespace App\HttpController\Index;
 
 use App\HttpController\BaseController;
+use App\Model\Identity;
 
 class BaseAuth extends BaseController
 {
@@ -12,7 +13,7 @@ class BaseAuth extends BaseController
     {
         if(parent::onRequest($action)){
             //鉴权
-            $check = $this->checkAuth();
+            $check = $this->checkAuth($this->authRule);
             if(!$check){
                 $this->withData(102, '访问权限不足');
             }
@@ -22,12 +23,11 @@ class BaseAuth extends BaseController
     }
 
     //权限验证
-    private function checkAuth(): bool
+    protected function checkAuth($rule): bool
     {
-
         //判断
-        if($this->authRule){
-            foreach($this->authRule as $v){
+        if($rule){
+            foreach($rule as $v){
 
                 $check = true;
                 //验证二级数组的所有，只要一个不通过，直接返回false
@@ -39,11 +39,14 @@ class BaseAuth extends BaseController
                                 $check = false;
                             }
                             break;
-                        //管理员用户验证
-                        case 'admin':
-                            // if(empty($this->session('user'))){
-                            //     $check = false;
-                            // }
+                        //登录身份权限规则验证
+                        case 'uri':
+                            $sess = $this->session('user');
+                            if(empty($sess)){
+                                $check = false;
+                            }else{
+                                $check = Identity::check($val, $sess['id']);
+                            }
                             break;
                     }
                 }

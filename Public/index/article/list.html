@@ -1,5 +1,5 @@
 
-<div>
+<template>
     <!--swipeable 滑动切换 sticky顶部悬浮-->
     <van-tabs
         v-model="active"
@@ -11,24 +11,27 @@
             <van-pull-refresh v-model="refresh0" @refresh="onRefresh0">
                 <van-list v-model="loading0" :finished="finished0" finished-text="没有更多了" @load="onLoadmList0">
                     <van-cell-group v-for="(item,key) in mList0" @click="showArticle(item.id)">
-                        <van-cell class="list avatar" :title="item.nickname" :icon="App.href+item.avatar" @click="showUser(item.uid, $event)">
-                            <span @click="followUser(item.uid, $event)">关注</span>
+                        <van-cell class="list avatar" :title="item.nickname" :icon="App.res+item.avatar" @click="showUser(item.uid, $event)">
+                            <span v-if="item.follow" @click="followUser(item, $event)">已关注</span>
+                            <span v-else @click="followUser(item, $event)" style="color:#4f8cea;">关注</span>
                         </van-cell>
                         <div class="main-call article-text">{{item.title}}</div>
                         <van-grid v-if="item.type.indexOf('img') != -1" :border="false" :column-num="3" style="padding: 0 0.8rem" class="no-gridpadd">
                             <van-grid-item v-for="(iv,ii) in getRes(item.resource)">
-                                <van-image class="border" @click="showImg(getRes(item.resource), ii, $event)" height="100" fit="contain" :src="iv"></van-image>
+                                <van-image class="border" fit="contain" @click="showImg(getRes(item.resource), ii, $event)" height="100" :src="iv"></van-image>
                             </van-grid-item>
                         </van-grid>
                         <div v-if="item.type.indexOf('video') != -1" class="small-video" style="text-align: center;padding: 0.5rem 0;">
                             <img class="vpalse" :src="App.href+ '/static/image/video-ext/video_btn_play.svg'"/>
-                            <van-image class="border" height="200" fit="contain" :src="getRes(item.resource)[0]"></van-image>
+
+                            <van-image class="border vimg-wauto" height="200" :src="getRes(item.resource)[0]"></van-image>
                         </div>
                         <div class="main-call">
-                            <div class="article-tag" @click="showClass(item.cid, $event)">
+                            <div class="article-tag" @click="showClass(item.tid, $event)">
                                 <van-icon name="label-o"></van-icon>
                                 {{item.cname}}
                             </div>
+                            <div class="article-views">{{item.views}}人看过</div>
                         </div>
                         <div class="main-call">
                             <span class="article-btn-l" @click="favor(1, item.id, key, $event)"><van-icon name="good-job-o"></van-icon>{{item.up}}</span>
@@ -47,25 +50,27 @@
         <van-tab :title="classTab[1]">
             <van-pull-refresh v-model="refresh1" @refresh="onRefresh1">
                 <van-list v-model="loading1" :finished="finished1" finished-text="没有更多了" @load="onLoadmList1">
-                    <van-cell-group v-for="(item,key) in mList1" @click="showArticle(item.id)">
-                        <van-cell class="list avatar" :title="item.nickname" :icon="App.href+item.avatar" @click="showUser(item.uid, $event)">
-                            <span @click="followUser(item.uid, $event)">关注</span>
+                    <van-cell-group v-for="(item,key) in mList1" :key="item.id" @click="showArticle(item.id)">
+                        <van-cell class="list avatar" :title="item.nickname" :icon="App.res+item.avatar" @click="showUser(item.uid, $event)">
+                            <span v-if="item.follow" @click="followUser(item, $event)">已关注</span>
+                            <span v-else @click="followUser(item, $event)" style="color:#4f8cea;">关注</span>
                         </van-cell>
                         <div class="main-call article-text">{{item.title}}</div>
                         <van-grid v-if="item.type.indexOf('img') != -1" :border="false" :column-num="3" style="padding: 0 0.8rem" class="no-gridpadd">
                             <van-grid-item v-for="(iv,ii) in getRes(item.resource)">
-                                <van-image class="border" @click="showImg(getRes(item.resource), ii, $event)" height="100" fit="contain" :src="iv"></van-image>
+                                <van-image class="border" fit="contain" @click="showImg(getRes(item.resource), ii, $event)" height="100" :src="iv"></van-image>
                             </van-grid-item>
                         </van-grid>
                         <div v-if="item.type.indexOf('video') != -1" class="small-video" style="text-align: center;padding: 0.5rem 0;">
                             <img class="vpalse" :src="App.href+ '/static/image/video-ext/video_btn_play.svg'"/>
-                            <van-image class="border" height="200" fit="contain" :src="getRes(item.resource)[0]"></van-image>
+                            <van-image class="border vimg-wauto" height="200" :src="getRes(item.resource)[0]"></van-image>
                         </div>
                         <div class="main-call">
-                            <div class="article-tag" @click="showClass(item.cid, $event)">
+                            <div class="article-tag" @click="showClass(item.tid, $event)">
                                 <van-icon name="label-o"></van-icon>
                                 {{item.cname}}
                             </div>
+                            <div class="article-views">{{item.views}}人看过</div>
                         </div>
                         <div class="main-call">
                             <span class="article-btn-l" @click="favor(1, item.id, key, $event)"><van-icon name="good-job-o"></van-icon>{{item.up}}</span>
@@ -82,33 +87,35 @@
 
         <!--列表3-->
         <van-tab :title="classTab[2]">
+            <van-empty description="开发中"></van-empty>
         </van-tab>
 
         <!--列表4-->
         <van-tab :title="classTab[3]">
+            <van-empty description="开发中"></van-empty>
         </van-tab>
 
         <!--列表5-->
         <van-tab :title="classTab[4]">
+            <van-empty description="开发中"></van-empty>
         </van-tab>
 
         <!--列表6-->
         <van-tab :title="classTab[5]">
+            <van-empty description="开发中"></van-empty>
         </van-tab>
 
-
-<!--        lazy-render = true-->
-        <van-popup
-            v-model="popup_show"
-            position="bottom"
-            :style="{ height: '100%',width: '100%' }"
-            @opened="loadArticle"
-        >
-            <div id="article-page"></div>
-        </van-popup>
     </van-tabs>
 
-</div>
+    <van-popup
+        v-model="popup_show"
+        position="bottom"
+        :style="{ height: '100%',width: '100%' }"
+        @opened="loadPopup"
+    >
+        <div id="list-main-popup"></div>
+    </van-popup>
+</template>
 
 <script>
 
@@ -119,7 +126,7 @@
     page.mpage = new Vue({
         el: '#main-page',
         data: {
-            classTab: ['推荐', '关注', '神接龙', '视频', '趣图'],
+            classTab: ['推荐', '关注', '神接龙', '视频', '趣图', '同城'],
             active: 0,
             popup_show: false, //是否显示弹出层
 
@@ -136,106 +143,100 @@
             refresh1: false,
             page1: 1,
 
+            action: ''
+
         },
         methods: {
             //图片预览
             showImg: function(d, i, e){
                 e.stopPropagation();
-                vant.ImagePreview({
-                    images: d,
-                    startPosition: i
+                //app返回键事件
+                App.addBack(function(){
+                    App.temp.instance && App.temp.instance.close && App.temp.instance.close();
                 });
-                // vant.ImagePreview([e.currentTarget.firstElementChild.src]);
+                App.temp.instance = (vapp||vant).ImagePreview({
+                    images: d,
+                    startPosition: i,
+                    onClose: function(){
+                        App.goBack(-1); //清空记录
+                    },
+                });
             },
             /* ---推荐列表----*/
-            //加载m0列表
             onLoadmList0: function(){
+                var _this = this;
                 App.es.ajax({
                     cmd: "index.Posts.getRecommendList"
                 }, function(e, a) {
                     if (e) {
-                        var _this = page.mpage;
                         _this.refresh0 && (_this.mList0 = [], _this.refresh0 = !1, vant.Toast("刷新成功"));
                         for (var s in e.result.list) _this.mList0.push(e.result.list[s]);
-                        0 === e.result.list.length && (_this.finished0 = !0), _this.loading0 = !1;
+                        5 > e.result.list.length && (_this.finished0 = !0), _this.loading0 = !1;
                     } else setTimeout(function() {
-                        page.mpage.loading0 = !1;
+                        _this.loading0 = !1;
                     }, 500);
                 });
-                /*
-                App.es.ajax({
-                    cmd: 'index.Posts.getRecommendList'
-                },function(ret, err){
-                    if(ret){
-                        if(page.mpage.refresh0){
-                            page.mpage.mList0 = [];
-                            page.mpage.refresh0 = false;
-                            vant.Toast('刷新成功');
-                        }
-                        for(var i in ret.result.list){
-                            page.mpage.mList0.push(ret.result.list[i]);
-                        }
-                        if(ret.result.list.length == 0){
-                            page.mpage.finished0 = true;
-                        }
-                        // 加载状态结束
-                        page.mpage.loading0 = false;
-                    }else{
-                        setTimeout(function () {
-                            page.mpage.loading0 = false;
-                        }, 500);
-                        // vant.Toast.fail('加载失败');
-                    }
-                });
-             */
-
             },
             onRefresh0: function(){
+                var _this = this;
                 setTimeout(function(){
                     this.finished0 = false;
-                    page.mpage.loading0 = true;
-                    page.mpage.onLoadmList0();
+                    _this.loading0 = true;
+                    _this.onLoadmList0();
                 }, 500);
             },
             /* ---END推荐列表----*/
 
             /* ---关注列表----*/
-            //加载m0列表
             onLoadmList1: function(){
+                var _this = this;
                 App.es.ajax({
                     cmd: "index.Posts.getFollowList",
                     data: {page: this.page1}
                 }, function(e, a) {
                     if (e) {
-                        var _this = page.mpage;
                         _this.refresh1 && (_this.mList1 = [], _this.refresh1 = !1, vant.Toast("刷新成功"));
                         for (var s in e.result.list) _this.mList1.push(e.result.list[s]);
-                        0 === e.result.list.length && (_this.finished1 = !0), _this.loading1 = !1, _this.page1 ++;
+                        5 > e.result.list.length && (_this.finished1 = !0), _this.loading1 = !1, _this.page1 ++;
                     } else setTimeout(function() {
-                        page.mpage.loading1 = !1;
+                        _this.loading1 = !1;
                     }, 500);
                 });
             },
             onRefresh1: function(){
+                var _this = this;
                 setTimeout(function(){
-                    var _this = page.mpage;
                     _this.finished1 = !1, _this.page1 = 1, _this.loading1 = !0, _this.onLoadmList1();
                 }, 500);
             },
             /* ---END关注列表----*/
 
+            //刷新列表事件
+            refresh: function (){
+                if(this.active == 0){
+                    this.refresh0 = true;
+                    this.onRefresh0();
+                }else if(this.active == 1){
+                    this.refresh1 = true;
+                    this.onRefresh1();
+                }
+                // document.body.scrollTop =
+                document.documentElement.scrollTop = 0;
+            },
             //赞踩帖子
             favor: function(type, id, key, e){
                 e.stopPropagation();
+                var _this = this;
                 App.es.ajax({
-                    cmd: 'index.Posts.favor',
+                    cmd: 'index.Posts.articleFavor',
                     data: {type: type, id: id}
                 },function(ret, err){
                     if(ret){
-                        if(type == 1){
-                            page.mpage.mList0[key].up += 1;
-                        }else{
-                            page.mpage.mList0[key].low += 1;
+                        if(ret.code === 0){
+                            _this.mList0[key].up = ret.result.up;
+                            _this.mList0[key].low = ret.result.low;
+
+                            // _this.mList0[key][type === 1?'up':'low'] += 1;
                         }
                         vant.Toast(ret.message);
                     }else{
@@ -246,37 +247,39 @@
             //点击进入帖子
             showArticle: function(id, e){
                 App.temp.articleId = id;
-                App.temp.articleClose = this.closeArticle;
+                App.temp.articleVm = '#list-main-popup';
+                this.action = 'index/article/show';
+                App.temp.articleClose = this.closePopup;
                 this.popup_show = true;
             },
             // 加载帖子
-            loadArticle(){
-                $('#article-page').load(App.href+'index/article/show');
+            loadPopup(){
+                App.load(App.temp.articleVm, App.href + this.action);
                 //app返回键事件
                 App.addBack(function(){
                     page.mpage.popup_show = false;
-                    page.mpage.closeArticle();
+                    page.mpage.closePopup();
                 });
             },
             //关闭帖子
-            closeArticle(){
+            closePopup(){
                 //销毁实例
                 if(App.temp.article && App.temp.article.$destroy) App.temp.article.$destroy();
                 delete App.temp.article;
                 delete App.temp.articleId;
                 delete App.temp.articleClose;
                 this.popup_show = false;
-                $('#article-page').empty();
-                App.redirect('index/main-0');//恢复路由
+                setTimeout(function(){
+                    App.redirect('index/main-0');//恢复路由
+                    App.dom(App.temp.articleVm).innerHTML = '';
+                },500);
             },
             //将资源转为url数组
-            getRes: function(attr){
-                if(!attr) return [];
-                var arr = attr.split(',');
-                for(var i in arr){
-                    arr[i] = App.res + arr[i];
-                }
-                return arr;
+            getRes: function(r){
+                if (!r) return [];
+                var t = r.split(",");
+                for(var i in t) t[i] = App.res + t[i];
+                return t;
             },
             //tab切换事件
             tabChange: function(){
@@ -290,12 +293,31 @@
             //查看用户
             showUser: function(uid, e){
                 e.stopPropagation();
-                vant.Toast('查看用户'+uid);
+                App.temp.showUid = uid;
+                App.temp.articleVm = '#list-main-popup';
+                this.action = 'index/user/show';
+                App.temp.userClose = this.closePopup;
+                this.popup_show = true;
             },
             //关注用户
-            followUser: function(uid, e){
+            followUser: function(item, e){
                 e.stopPropagation();
-                vant.Toast('关注用户'+uid);
+                App.es.ajax({
+                    cmd: "index.User.followUser",
+                    data: {
+                        type: item.follow,
+                        fuid: item.uid
+                    }
+                }, function(e, a) {
+                    if (e) {
+                        if(e.code !== 0){
+                            item.follow = !item.follow;
+                            vant.Toast(e.message);
+                        }
+                    } else setTimeout(function() {
+                        page.mpage.loading = !1;
+                    }, 500);
+                });
             }
         },
         mounted: function(){

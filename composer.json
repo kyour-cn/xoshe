@@ -10,12 +10,15 @@
         "easyswoole/session": "2.x",
         "easyswoole/validate": "^1.2",
         "endroid/qr-code": "^3.9",
-        "guzzlehttp/guzzle": "^7.2",
         "alibabacloud/client": "^1.5",
         "easyswoole/verifycode": "3.x",
         "gregwar/image": "^2.0",
         "aliyuncs/oss-sdk-php": "^2.4",
-        "php-ffmpeg/php-ffmpeg": "^0.16.0"
+        "php-ffmpeg/php-ffmpeg": "^0.16.0",
+        "ext-json": "*",
+        "ext-fileinfo": "*",
+        "ext-redis": "*",
+        "simps/mqtt": "^1.0"
     },
     "autoload": {
         "psr-4": {

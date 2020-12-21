@@ -1,8 +1,9 @@
-<div>
+<template>
 
     <van-nav-bar
         fixed
-        title="标题"
+        title="帖子详情"
+        style="z-index: 100"
         @click-left="onCloseShow"
         @click-right="onClickRight"
     >
@@ -16,13 +17,13 @@
     <div style="height: 46px;"></div>
 
     <div>
-        <van-cell :title="info.nickname" class="list avatar" :icon="App.href + info.avatar">
+        <van-cell :title="info.nickname" class="list avatar" :icon="App.res + info.avatar">
             <template #right-icon>
                 <van-button size="mini" round plain color="#fe698d" icon="plus">关注</van-button>
             </template>
         </van-cell>
         <!--文章内容-->
-            <p class="article-text">{{info.content}}</p>
+        <p class="article-text">{{info.content}}</p>
 
         <div class="main-call">
 
@@ -46,8 +47,8 @@
 
             <div
                 class="small-video"
-                 v-if="info.type.indexOf('video') != -1"
-                 style="width: 100%;"
+                v-if="info.type.indexOf('video') != -1"
+                style="width: 100%;"
             >
                 <img
                     class="vpalse"
@@ -67,24 +68,15 @@
                     width="100%"
                     height="100%"
                 ></video>
+                <div class="progress">
+                    <div class="p-load" :style="{width: ((video.buffered_e/video.duration) * 100)+'%'}"></div>
+                    <div class="p-now" :style="{width: ((video.currentTime/video.duration) * 100)+'%'}"></div>
+                </div>
             </div>
-<!--            <video-->
-<!--                v-if="info.type.indexOf('video') != -1"-->
-<!--                style="max-height: 18rem;width: 100%;"-->
-<!--                :src="info.resource"-->
-<!--                controls = "true"-->
-<!--                preload="auto"-->
-<!--                webkit-playsinline="true"-->
-<!--                playsinline="true"-->
-<!--                x-webkit-airplay="allow"-->
-<!--                x5-video-player-type="h5"-->
-<!--                x5-video-player-fullscreen="true"-->
-<!--                x5-video-orientation="portraint"-->
-<!--            ></video>-->
         </div>
 
         <div style="height: 0.2rem;width: 100%;background: #dcdee0;"></div>
-        <van-cell class="avatar-big" :icon="App.href + '/avatar/1.png'" title="今天你吃了吗" value="" size="large" label="320个用户已加入">
+        <van-cell class="avatar-big" :icon="App.res + info.icon" :title="info.cname" value="" size="large" label="320个用户已加入">
             <template #right-icon>
                 <van-button style="margin-top: 0.5rem;" size="mini" round plain color="#fe698d" icon="plus">加入</van-button>
             </template>
@@ -92,52 +84,156 @@
         <div style="height: 0.2rem;width: 100%;background: #dcdee0;"></div>
 
         <div style="margin-bottom: 50px;">
-            <van-cell class="list avatar" :icon="App.href + '/avatar/1.png'" title="单元格" value="内容" label="描述信息"></van-cell>
-            <van-cell class="list avatar" :icon="App.href + '/avatar/1.png'" title="单元格" value="内容" label="描述信息"></van-cell>
-            <van-cell class="list avatar" :icon="App.href + '/avatar/1.png'" title="单元格" value="内容" label="描述信息"></van-cell>
+            <van-pull-refresh v-model="refresh" @refresh="onRefresh">
+                <van-list v-model="loading" :finished="finished" finished-text="没有更多了，赶快发表自己的看法吧" @load="onLoadmList">
+                    <van-cell-group v-for="c in comment" :key="c.id">
+                        <van-cell
+                            class="list avatar"
+                            :icon="App.res + c.avatar"
+                            :title="c.nickname"
+                        >
+                            <i class="fas fa-thumbs-up c-grey" @click="commentFavor(c, 1)"></i>
+                            <span style="padding: 0 0.25rem;">{{c.favor}}</span>
+                            <i class="fas fa-thumbs-down c-grey" @click="commentFavor(c, 0)"></i>
+                        </van-cell>
+                        <van-cell :title="c.content"></van-cell>
+                        <van-cell class="comment-call">
+                            <span class="comment-tool">{{c.time}}</span>
+                            <span class="comment-tool">
+                                <van-button color="#eee" round size="mini">0条回复</van-button>
+                            </span>
+                        </van-cell>
+                    </van-cell-group>
+                </van-list>
+            </van-pull-refresh>
         </div>
-
     </div>
 
-</div>
-<van-tabbar style="background: #fafafa;">
-    <van-row style="width: 100%;padding: 0.5rem 0.5rem;">
-        <van-col span="13" style="background: #fff;border-radius: 1rem;height: 100%;padding-top: 0.3rem;">
-            <span style="padding-left: 1.5rem;color: #888;">写评论...</span>
-        </van-col>
-        <van-col span="11" style="height: 100%;padding-top: 0.3rem;">
-            <span class="article-btn-l"><van-icon name="good-job-o" size="20"></van-icon>{{info.up}}</span>
-            <span class="article-btn-l"><van-icon name="star-o" size="20"></van-icon>{{info.star}}</span>
-            <span class="article-btn-r" style="padding-left: 0.2rem;"><van-icon name="share-o" size="25"></van-icon></span>
-        </van-col>
-    </van-row>
+    <van-tabbar style="background: #fafafa;">
+        <van-row style="width: 100%;padding: 0.5rem 0.5rem;">
+            <van-col span="13" style="background: #fff;border-radius: 1rem;height: 100%;padding-top: 0.3rem;" @click="comment_frame = true">
+                <span style="padding-left: 1.5rem;color: #888;">写评论...</span>
+            </van-col>
+            <van-col span="11" style="height: 100%;padding-top: 0.3rem;">
+                <span class="article-btn-l" @click="favor(1, $event)">
+                    <van-icon v-if="isFavor" name="good-job-o" color="#fa0" size="20"></van-icon>
+                    <van-icon v-if="!isFavor" name="good-job-o" size="20"></van-icon>
+                    {{info.up}}
+                </span>
+                <span class="article-btn-l" @click="star">
+                    <van-icon v-if="isStar" name="star-o" color="#fa0" size="20"></van-icon>
+                    <van-icon v-if="!isStar" name="star-o" size="20"></van-icon>
+                    {{info.star}}
+                </span>
+                <span class="article-btn-r" @click="showShare = true" style="padding-left: 0.2rem;">
+                    <van-icon name="share-o" size="25"></van-icon>
+                </span>
+            </van-col>
+        </van-row>
 
-</van-tabbar>
+    </van-tabbar>
+
+    <van-popup
+        v-model="comment_frame"
+        position="bottom"
+       :style="{width: '100%'}"
+    >
+        <van-cell-group v-if="comment_frame">
+            <van-field
+                v-model="comment_val"
+                rows="4"
+                type="textarea"
+                maxlength="500"
+                placeholder="请输入评论"
+                show-word-limit
+                class="comment-val"
+            ></van-field>
+        </van-cell-group>
+        <div>
+            <van-row type="flex">
+                <van-col span="14" style="margin-top: 0.2rem;">
+                    <van-icon @click="switchComment('audio')" class="padd25" size="30" name="service-o"></van-icon>
+                    <van-icon @click="switchComment('photo')" class="padd25" size="30" name="photo-o"></van-icon>
+                    <van-icon @click="switchComment('video')" class="padd25" size="30" name="video-o"></van-icon>
+                </van-col>
+                <van-col span="10">
+                    <div style="padding: 0.25rem 0.25rem;">
+                        <van-button style="width: 100%;" size="small" round color="#fa648c" @click="subComment">发送</van-button>
+                    </div>
+                </van-col>
+            </van-row>
+        </div>
+    </van-popup>
+
+    <van-share-sheet
+        v-model="showShare"
+        title="立即分享给好友"
+        :options="shareOptions"
+        @select="onShare"
+    ></van-share-sheet>
+
+    <input type="text" value="123" id="invite_link" style="display: none;">
+
+</template>
 <script>
 
     //导入组件 form vant
-    // App.use([], vant);
+    App.use(['Field', 'ShareSheet'], vant);
 
     //设置当前url，便于分享
     App.redirect('index/main-0-a-'+App.temp.articleId);
+
+    if(!('ClipboardJS' in window)){
+        App.loadRes(App.href+'/static/extend/js/clipboard.min.js', 'js');
+    }
+
     //定义Vue实例
     App.temp.article = new Vue({
-        el: '#article-page',
+        el: App.temp.articleVm,
         data: {
             id: App.temp.articleId,
             info: {
                 type: 'text',
                 nickname: '加载中',
-                avatar: 'avatar/default.png'
+                avatar: 'avatar/default.png',
+                icon: 'avatar/default.png'
             },
-            //图片预览
-            showImg: function(key, e){
-                e.stopPropagation();
-                vant.ImagePreview({
-                    images: App.temp.article.resources,
-                    startPosition: key
-                });
+            video: {
+                buffered_e: 0,
+                currentTime: 0,
+                duration: 0
             },
+            isMy: false,
+            isStar: false,
+            isFavor: false,
+
+            //显示评论
+            comment_frame: false,
+            comment_val: '',
+            // comment_type: 1,
+
+            //评论列表
+            loading: false,
+            finished: false,
+            refresh: false,
+            page: 1,
+            comment: [],
+
+            //分享
+            showShare: false,
+            shareOptions: [
+                [
+                    {name: '微信', icon: App.href+'static/image/icon/share-icon-wechat.png', type: 'wechat'},
+                    {name: '朋友圈', icon: App.href+'static/image/icon/share-icon-moments.png', type: 'moments'},
+                    {name: 'QQ', icon: App.href+'static/image/icon/share-icon-qq.png', type: 'qq'},
+                    {name: '复制链接', icon: App.href+'static/image/icon/share-icon-link.png', type: 'link', className: 'copyLink'},
+                ],
+                [
+                    {name: '分享海报', icon: App.href+'static/image/icon/share-icon-poster.png', type: 'poster'},
+                    {name: '二维码', icon: App.href+'static/image/icon/share-icon-qrcode.png', type: 'qrcode'},
+                    {name: '保存相册', icon: App.href+'static/image/icon/share-icon-down.png', type: 'down'},
+                ],
+            ],
         },
         methods: {
             //关闭帖子弹出层
@@ -147,6 +243,15 @@
             onClickRight: function(){
                 vant.Toast('更多');
             },
+            //图片预览
+            showImg: function(key, e){
+                e.stopPropagation();
+                (vapp||vant).ImagePreview({
+                    images: App.temp.article.resources,
+                    startPosition: key
+                });
+            },
+            //视频点击
             videoClick: function(){
                 var videoplay = document.getElementById("videoPlay");
                 var videoPalse = document.getElementById("videoPalse"); //video标签
@@ -158,9 +263,134 @@
                     videoPalse.src = App.href+ '/static/image/video-ext/video_btn_pause.svg';
                     videoPalse.style.display = "block"; //暂停的时候图标显示
                 }
+            },
+            //赞踩帖子
+            favor: function(type, e){
+                e.stopPropagation();
+                var _this = this;
+                App.es.ajax({
+                    cmd: 'index.Posts.articleFavor',
+                    data: {type: type, id: this.info.id}
+                },function(ret, err){
+                    if(ret){
+                        if(ret.code === 0){
+                            _this.info.up = ret.result.up;
+                            _this.isStar = ret.result.isStar;
+                        }
+                        vant.Toast(ret.message);
+                    }else{
+                        vant.Toast('网络错误');
+                    }
+                });
+            },
+            //收藏
+            star: function (e){
+                e.stopPropagation();
+                var _this = this;
+                App.es.ajax({
+                    cmd: 'index.Posts.articleStar',
+                    data: {type: this.isStar ? 0:1, id: this.info.id}
+                },function(ret, err){
+                    if(ret){
+                        if(ret.code === 0){
+                            _this.info.star = ret.result.star;
+                            _this.isStar = ret.result.isStar;
+                        }
+                        vant.Toast(ret.message);
+                    }else{
+                        vant.Toast('网络错误');
+                    }
+                });
+            },
+            onLoadmList: function(){
+                var _this = this;
+                App.es.ajax({
+                    cmd: "index.Posts.getCommentList",
+                    data: {id: _this.id, page: _this.page}
+                }, function(e, a) {
+                    if (e) {
+                        _this.refresh && (_this.comment = [], _this.refresh = !1);
+                        for (var s in e.result.list) _this.comment.push(e.result.list[s]);
+                        10 > e.result.list.length && (_this.finished = !0), _this.loading = !1, _this.page ++;
+                    } else setTimeout(function() {
+                        _this.loading = !1;
+                    }, 500);
+                });
+            },
+            onRefresh: function(){
+                var _this = this;
+                setTimeout(function(){
+                    _this.finished = !1, _this.page = 1, _this.loading = !0, _this.onLoadmList();
+                }, 500);
+            },
+            //切换评论类型
+            switchComment: function(type){
+                vant.Toast(type+'开发中')
+            },
+            //发布评论
+            subComment: function(){
+                var _this = this;
+
+                App.es.ajax({
+                    cmd: "index.Posts.sendComment",
+                    data: {id: this.id, content: this.comment_val}
+                }, function(ret, err) {
+                    if(ret) {
+                        if(ret.status){
+                            _this.refresh = true;
+                            _this.finished = false;
+                            _this.page = 1;
+
+                            _this.comment_val = '';
+                            _this.comment_frame = false;
+                        }
+                        vant.Toast(ret.message);
+
+                    }else{
+                        vant.Toast('网络发生错误.273');
+                    }
+                });
+            },
+            //赞踩评论
+            commentFavor: function(item, type){
+                var _this = this;
+
+                App.es.ajax({
+                    cmd: "index.Posts.commentFavor",
+                    data: {id: item.id, type: type}
+                }, function(ret, err) {
+                    if(ret) {
+                        vant.Toast(ret.message);
+                        if(ret.status) {
+                            item.favor = ret.result.favor;
+                        }
+                    }else{
+                        vant.Toast('网络发生错误.307');
+                    }
+                });
+            },
+            //分享操作
+            onShare: function (option){
+                // var _this = this;
+                switch (option.type){
+                    case 'link':
+                        var clipboard = new ClipboardJS('.copyLink', {
+                            text: function(trigger) {
+                                clipboard.destroy();
+                                return window.location.href;
+                            }
+                        });
+                        vant.Toast('已复制到剪切板');
+                        break;
+                    default:
+                        vant.Toast('开发中');
+                        break;
+                }
+                this.showShare = false;
             }
         },
         computed: {
+            //获取资源
             resources: function() {
                 if(!this.info.resource) return [];
                 var arr = this.info.resource.split(',');
@@ -169,29 +399,57 @@
                 }
                 return arr;
             }
+        },
+        watch: {
+            comment_frame: function (val) {
+                if(val){
+                    //输入框获取焦点
+                    setTimeout(function () {
+                        App.dom('.comment-val textarea').focus();
+                    },100)
+                }
+            }
+        },
+        mounted: function(){
+            var _this = this;
+
+            //获取帖子内容
+            App.es.ajax({
+                cmd: 'index.posts.getArticle',
+                data: {
+                    id: App.temp.articleId
+                }
+            },function(ret, err){
+                if(ret){
+                    if(ret.code === 0){
+                        _this.info = ret.result.info;
+                        _this.isMy = ret.result.isMy;
+                        _this.isStar = ret.result.isStar;
+                        _this.isFavor = ret.result.isFavor;
+
+                        //视频进度定时器
+                        if(_this.info.type.indexOf('video') > -1){
+                            App.temp.vtimer = setInterval(function () {
+                                var videoplay = document.getElementById("videoPlay");
+                                if(!videoplay) return;
+                                try{
+                                    _this.video.buffered_e = videoplay.buffered.end(0);
+                                    _this.video.currentTime = videoplay.currentTime;
+                                    _this.video.duration = videoplay.duration;
+                                }catch (e) {
+                                    clearInterval(App.temp.vtimer)
+                                }
+                            }, 500);
+                        }
+
+                    }else{
+                        vant.Toast.fial(ret.message);
+                    }
+                }else{
+                    vant.Toast.fial('网络错误');
+                }
+            });
         }
     });
-
-    (function(){
-
-        //获取帖子内容
-        App.es.ajax({
-            cmd: 'index.posts.getArticle',
-            data: {
-                id: App.temp.articleId
-            }
-        },function(ret, err){
-            if(ret){
-                if(ret.code === 0){
-                    App.temp.article.info = ret.result;
-                }else{
-                    van.Toast.fial(ret.message);
-                }
-            }else{
-                vant.Toast.fial('网络错误');
-            }
-        });
-
-    })();
 
 </script>

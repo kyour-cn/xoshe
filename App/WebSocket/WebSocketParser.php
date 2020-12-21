@@ -37,7 +37,7 @@ class WebSocketParser implements ParserInterface
             echo "cmd parameter does not exist. \n";
             return null;
         }
-        $cmd = explode('.',$data['cmd']);
+        $cmd = explode('.', $data['cmd']);
 
         $ns_len = count($cmd) -1;
 

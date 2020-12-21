@@ -1,24 +1,26 @@
 <?php declare(strict_types=1);
+/**
+ * 用户相关操作控制器
+ */
 namespace App\HttpController\Index;
 
 use App\Common\Utils;
 use App\Model\User as UserModel;
 use EasySwoole\Validate\Validate;
+use Gregwar\Image\Image;
 
 class User extends BaseAuth
 {
     public $authRule = [];
 
+    //获取用户信息
     public function getInfo()
     {
         $sess = $this->session('user');
-
         if(!$sess){
             return $this->withData(101, '未登录');
         }
-
         return  $this->withData(0, 'success',['info' => $sess]);
-
     }
 
     //刷新session数据
@@ -30,6 +32,7 @@ class User extends BaseAuth
         if(!$check) return false;
 
         $data = $check->toArray();
+        //避免暴露密码风险
         unset($data['password']);
         $this->session('user', $data);
 
@@ -57,25 +60,27 @@ class User extends BaseAuth
         $check = UserModel::create()
         ->where([
             'num'   => [$post['username'], '='],
-            'phone' => [$post['username'], '=', 'or']
+            'phone' => [$post['username'], '=', 'or'],
+            'password' => md5($post['password'])
         ])
         // ->field('id,nickname,num,phone,avatar,register_time,credit,level,sign,info,status')
-        ->get([
-            'password' => md5($post['password'])
-        ]);
-
+        ->get();
         if($check){
             //登录成功
             $user = $check->toArray();
-
+            //避免暴露密码风险
             unset($user['password']);
 
             // 保存session
+            $token = $this->sessionId();
+            $user['token'] = $token;
             $this->session('user', $user);
+
+            UserModel::create()->update(['token' => ''],['token' => $token]);
 
             //更新登录时间
             $check->update([
-                'token' => $this->sessionId(),
+                'token' => $token,
                 'login_time' => time()
             ]);
 
@@ -83,13 +88,11 @@ class User extends BaseAuth
         }else{
             return $this->withData(1, '账号或密码不正确');
         }
-
     }
 
     // 注册接口
     public function registApi()
     {
-        $sess = $this->session('user');
         $post = $this->input();
 
         $valitor = new Validate();
@@ -128,7 +131,7 @@ class User extends BaseAuth
             'avatar' => 'avatar/default.png',
             'register_time' => time(),
             'sign' => '该用户没有签名',
-            'info' => '{"fans": 0, "star": 0, "posts": 0, "follow": 1}'
+            'info' => '{"fans": 0, "star": 0, "posts": 0, "follow": 1, "appreciate": 0}'
         ])
         ->save();
 
@@ -137,7 +140,6 @@ class User extends BaseAuth
         }else{
             return $this->withData(1, '账号或密码不正确');
         }
-
     }
 
     //修改资料
@@ -160,21 +162,69 @@ class User extends BaseAuth
         ->update($post, ['id' => $sess['id']]);
 
         $this->updateSession();
-
         $this->withData($check?0:1, $check?'修改成功':'发生错误');
+    }
+
+    //上传头像
+    public function upAvatar()
+    {
+        $sess = $this->session('user');
+        if(!$sess) return $this->withData(101,'暂未登录');
+        $post = $this->input();
+
+        if(empty($post['avatar'])) return $this->withData(1,'参数错误');
+
+        $user = UserModel::create()->get($sess['id']);
+
+        $fName = EASYSWOOLE_ROOT. '/Temp/avatar_'.md5((string) time());
+
+        $ret = Utils::base64Image($post['avatar'], $fName);
+        if($ret){
+
+            $fName2 = $fName.'.tmp';
+
+            //缩放
+            Image::open($fName)
+                ->resize(200, 200)
+                ->save($fName2, 'png', 80);
+
+            //资源完整路径
+            $fPath = 'avatar/u/'.substr(md5((string) $user['id']), 0, 2)
+                .'/'. date('mdHis_'). $user['id']. '.png';
+
+            //开始上传
+            list($err, $ret) = Utils::saveFile($fName2, $fPath);
+            if(!$ret){
+                return $this->withData(1, '图片保存失败');
+            }
+
+            //删除本地文件
+            @unlink($fName);
+            @unlink($fName2);
+
+            //删除原文件
+            Utils::delFile($user['avatar']);
+
+            $check = UserModel::create()->update(['avatar' => $fPath], ['id'=>$sess['id']]);
+            if($check) {
+                $this->updateSession();
+                return $this->withData(0, '上传成功');
+            }
+        }
+        $this->withData(1, '发生错误');
     }
 
     // 注销登录
     public function logout()
     {
-        $this->session('user', null);
+        $sess = $this->session('user');
+        if($sess){
+            $this->session('user', null);
+            if(!empty($sess['id'])){
+                UserModel::create()->update(['token' => ''],['id' => $sess['id']]);
+            }
+        }
         return $this->withData(0, '注销成功');
     }
 
-    // 查看session
-    public function sess()
-    {
-        $sess = $this->session('user');
-        return $this->withData(0, 'ok', $sess);
-    }
 }

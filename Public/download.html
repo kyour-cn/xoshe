@@ -34,6 +34,12 @@
 <div class="download" onclick="down()">
     立即下载
 </div>
+<div class="download" onclick="openWeb()">
+    访问网页版
+</div>
+<!--<div class="download" onclick="openApp()">-->
+<!--    打开应用-->
+<!--</div>-->
 <div class="ps box">
     <div class="flex">
     </div>
@@ -91,7 +97,8 @@
 <script type="text/javascript">
 
     function down(){
-        var downloadurl = 'https://A6157104583791.qiniucdn.apicloud-system.com/80aecfce8b11e51c035e901d33de5399_d';
+
+        var downloadurl = 'https://downloadpkg.app3c.cn/app/download?path=http://xoshe.cn/app.apk';
         var iswx = '';
         var u = navigator.userAgent;
         var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1; //android终端
@@ -107,21 +114,24 @@
         }
     }
 
-    // $(".download").on("click",function(){
-    //     var downloadurl = 'http://appdata.shuhai.com/ishuhai/app/download?packagename=com.shuhai.bookos&qd=aladdin';
-    //     var iswx = '';
-    //     var u = navigator.userAgent;
-    //     var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1; //android终端
-    //     var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
-    //     if(isiOS){
-    //         window.location.href = downloadurl;
-    //     }
-    //     if(isAndroid && iswx){
-    //         layer.msg('点击右上角的“...”选择在浏览器中打开',{anim: 4});
-    //     }else{
-    //         window.location.href = downloadurl;
-    //     }
+    function openWeb() {
+
+        window.location.href = '/';
+
+    }
+
+    // function openApp() {
+    //     var iframe = document.createElement('iframe');
+    //     iframe.style.cssText='display:none;width=0;height=0';
     //
-    // })
+    //     // 立即打开的按钮
+    //     document.body.appendChild(iframe);
+    //     iframe.src = 'xoshe://main/alert.aaa';
+    //     setTimeout(function() {
+    //         window.location.href = '/download';
+    //     }, 500);
+    //
+    // }
+
 </script>
 </html>

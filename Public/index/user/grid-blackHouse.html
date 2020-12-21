@@ -1,0 +1,31 @@
+
+<template>
+    <van-nav-bar
+        title="小黑屋"
+        left-text="返回"
+        left-arrow
+        @click-left="onClickLeft"
+    ></van-nav-bar>
+    <div style="height: 46px;"></div>
+
+
+</template>
+
+<script>
+
+    //导入组件 form vant
+    App.use([], vant);
+
+    //定义Vue实例
+    page.uhome.upopup = new Vue({
+        el: '#user-popup',
+        data: {
+        },
+        methods: {
+            onClickLeft: function(){
+                page.uhome.show_popup = false;
+            }
+        }
+    });
+
+</script>

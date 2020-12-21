@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace App\Model;
 
 use EasySwoole\ORM\AbstractModel;
@@ -12,6 +12,6 @@ class Association extends AbstractModel
     /**
       * @var string 
       */
-    protected $tableName = 'sssociation';
+    protected $tableName = 'association';
 
 }

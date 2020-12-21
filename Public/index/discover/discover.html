@@ -1,61 +1,125 @@
 
-<div>
+<template>
     <van-search v-model="search" placeholder="请输入搜索关键词" ></van-search>
-    <van-tabs v-model="active" sticky>
-        <van-tab title="关注">
-            <van-empty image="search" description="暂无关注内容"></van-empty>
+    <van-tabs v-model="active" sticky @click="onTabs">
+        <van-tab title="我的">
+            <div class="divide-line"></div>
+
+            <van-cell title="关注话题" value="更多" size="large" is-link></van-cell>
+            <van-cell>
+                <div class="grid-block">
+                    <div v-for="item in my_topic" :key="item" class="grid-item">
+                        <img class="grid-icon" :src="App.res + item.icon" />
+                        <div class="grid-text">
+                            {{item.name}}
+                        </div>
+                    </div>
+                </div>
+            </van-cell>
+
+            <van-cell title="我的社团" value="更多" size="large" is-link></van-cell>
+            <van-cell>
+                <div class="grid-block">
+                    <div v-for="item in my_assoc" :key="item" class="grid-item">
+                        <div class="grid-icon">
+
+                        </div>
+                        <div class="grid-text">
+                            123456789
+                        </div>
+                    </div>
+                </div>
+            </van-cell>
+
+<!--            <van-empty image="search" description="暂无关注内容"></van-empty>-->
         </van-tab>
-        <van-tab title="分类">
+        <van-tab title="话题">
+            <div class="divide-line"></div>
+
             <van-sidebar
                 v-model="class_index"
                 @change="onChangeClass"
                 :style="{position:'absolute',height:(window.screen.availHeight - 150)+'px',overflow:'scroll'}"
             >
-                <van-sidebar-item v-for="item in class_list" :title="item.name"></van-sidebar-item>
+                <van-sidebar-item v-for="item in class_arr" :key="item.id" :title="item.name"></van-sidebar-item>
             </van-sidebar>
+
             <div :style="{'padding-left': '80px',height:(window.screen.availHeight - 160)+'px',overflow:'scroll'}">
                 <van-list
-                    v-model="mlist_loading"
-                    :finished="mlist_finished"
+                    v-model="class_list_loading"
+                    :finished="class_list_finished"
                     finished-text="没有更多了"
                     @load="onClassLoad"
                 >
-                    <van-cell v-for="item in class_mlist" :key="item" label="描述信息" @click="showClass(item.id)">
+                    <div
+                        @click="createTopic"
+                        style="margin: 0.85rem;padding: 0.5rem;background-color: #FAFAFA;color: #fa3434;border-radius: 0.5rem;"
+                    >
+                        <span>创建此分类的话题</span>
+                    </div>
+                    <van-cell v-for="item in class_list" :key="item.id" label="描述信息" @click="showClass(item.id)">
                         <template #title>
                             <span class="custom-title">{{item.name}}</span>
-                            <!--<van-tag type="danger">标签</van-tag>-->
+                            <van-tag plain type="danger">new</van-tag>
                         </template>
                         <template #icon>
-                            <van-icon :name="item.icon" size="40" style="padding:0.3rem 0.3rem 0 0;"></van-icon>
+                            <van-icon :name="App.res+item.icon" size="40" class="call-avatar"></van-icon>
                         </template>
-                        <van-button size="mini">关注</van-button>
+                        <van-button v-if="!item.follow" size="small" @click="joinTopic(item, $event)">加入</van-button>
+                        <van-button v-if="item.follow" size="small" @click="joinTopic(item, $event)">退出</van-button>
                     </van-cell>
                 </van-list>
             </div>
         </van-tab>
-        <van-tab title="社团">社团</van-tab>
-        <van-tab title="附近">附近</van-tab>
-    </van-tabs>
-    
-</div>
+        <van-tab title="社团">
+            <div class="divide-line"></div>
 
-<!--弹出层-->
-<van-popup
-    v-model="show_popup"
-    @opened="loadPopup"
-    @close="closePopup"
-    position="right"
-    style="width:100%; height:100%;"
->
-    <div id="discover-popup">
-    </div>
-</van-popup>
+            <van-list
+                v-model="assoc_list_loading"
+                :finished="assoc_list_finished"
+                finished-text="没有更多了"
+                @load="onAssocLoad"
+            >
+                <div style="margin: 0.85rem;padding: 0.5rem;background-color: #FAFAFA;color: #fa3434;border-radius: 0.5rem;">
+                    <span>申请创建社团</span>
+                </div>
+                <van-cell v-for="item in assoc_list" :key="item.id" label="描述信息" @click="showClass(item.id)">
+                    <template #title>
+                        <span class="custom-title">{{item.name}}</span>
+                        <van-tag type="danger">标签</van-tag>
+                    </template>
+                    <template #icon>
+                        <van-icon :name="App.res+item.icon" size="40" class="call-avatar"></van-icon>
+                    </template>
+                    <van-button size="small" @click="joinAssoc(item, $event)">加入</van-button>
+                </van-cell>
+            </van-list>
+        </van-tab>
+        <van-tab title="附近">
+            <div class="divide-line"></div>
+
+            <van-empty image="search" description="暂无内容"></van-empty>
+        </van-tab>
+    </van-tabs>
+
+    <!--弹出层-->
+    <van-popup
+        v-model="show_popup"
+        @opened="loadPopup"
+        @close="closePopup"
+        position="bottom"
+        style="width:100%; height:100%;"
+    >
+        <div id="discover-popup">
+        </div>
+    </van-popup>
+
+</template>
 
 <script>
 
     //导入组件 form vant
-    App.use([
-    ], vant);
+    // App.use([], vant);
 
     //定义Vue实例
     page.discover = new Vue({
@@ -63,98 +127,197 @@
         data: {
             active: 1,
             show_popup: false,
-            search: '',
+            search: '', //搜索框
 
-            //分类
-            class_list: [],
+            //我的
+            my_assoc: [],
+            my_topic: [],
+
+            //分类列表
+            class_arr: [],
             class_index: 0,
 
-            class_mlist: [],
-            mlist_loading: false,
-            mlist_finished: false,
-            mlist_page: 1,
-            refreshing: false
+            //分类话题列表
+            class_list: [],
+            class_list_loading: false,
+            class_list_finished: false,
+            class_list_page: 1,
+            class_list_refreshing: false,
 
+            //社团列表
+            assoc_list: [],
+            assoc_list_loading: false,
+            assoc_list_finished: false,
+            assoc_list_page: 1,
+            assoc_list_refreshing: false,
+
+            //弹出层操作链接
+            action: ''
         },
         methods: {
             //载入弹出层
             loadPopup: function(){
-                $('#release-popup').load(App.href + page.release.action);
+                App.load('#discover-popup', App.href + this.action);
                 App.addBack(function(){
-                    page.discover.show_popup = false;
+                    this.show_popup = false;
                 });
             },
             //关闭弹出层
             closePopup: function(){
-                if(page.release.upopup && page.release.upopup.$destroy) page.release.upopup.$destroy();
-                page.release.upopup = null;
-                $('#release-popup').empty();
+                if(page.discover.upopup && page.discover.upopup.$destroy) page.discover.upopup.$destroy();
+                this.upopup = null;
+                App.dom('#discover-popup').innerHTML = '';
             },
+            //分类列表
             onClassLoad: function(){
-                if(this.class_list.length === 0) return;
-                if(this.refreshing){
-                    this.class_mlist = [];
-                    this.refreshing = false;
+                if(this.class_arr.length === 0) return;
+                if(this.class_list_refreshing){
+                    this.class_list = [];
+                    this.class_list_refreshing = false;
                 }
+                var _this = this;
                 App.es.ajax({
-                    cmd: 'index.posts.classList',
+                    cmd: 'index.Discover.classList',
                     data: {
-                        pid: this.class_list[this.class_index].id,
-                        page: this.mlist_page
+                        pid: this.class_arr[this.class_index].id,
+                        page: this.class_list_page
                     }
                 },function(ret, err){
                     if(ret){
-                        var _this = page.discover;
                         if(ret.code == 0){
                             if(ret.result.list.length === 0){
-                                _this.mlist_finished = true; //加载结束
+                                _this.class_list_finished = true; //加载结束
                             }
                             for(var i in ret.result.list){
-                                _this.class_mlist.push(ret.result.list[i]);
+                                _this.class_list.push(ret.result.list[i]);
                             }
-                            _this.mlist_page += 1;
-
+                            _this.class_list_page += 1;
                         }else{
-                            _this.mlist_finished = true; //加载结束
+                            _this.class_list_finished = true; //加载结束
                         }
-                        _this.mlist_loading = false;
+                        _this.class_list_loading = false;
+                    }else{
+                        vant.Toast('网络错误');
+                    }
+                });
+            },
+            //社团列表
+            onAssocLoad: function(){
+                if(this.assoc_list_refreshing){
+                    this.assoc_list = [];
+                    this.assoc_list_refreshing = false;
+                }
+                var _this = this;
+                App.es.ajax({
+                    cmd: 'index.Discover.assocList',
+                    data: {}
+                },function(ret, err){
+                    if(ret){
+                        if(ret.code == 0){
+                            if(ret.result.list.length === 0){
+                                _this.assoc_list_finished = true; //加载结束
+                            }
+                            for(var i in ret.result.list){
+                                _this.assoc_list.push(ret.result.list[i]);
+                            }
+                            _this.assoc_list_page += 1;
+                        }else{
+                            _this.assoc_list_finished = true; //加载结束
+                        }
+                        _this.assoc_list_loading = false;
                     }else{
                         vant.Toast('网络错误');
                     }
                 });
             },
             onChangeClass: function(index){
-                this.mlist_page = 1;
-                this.mlist_finished = false; //启用加载
-                this.mlist_loading = true;
-                this.refreshing = true; // 刷新
+                this.class_list_page = 1;
+                this.class_list_finished = false; //启用加载
+                this.class_list_loading = true;
+                this.class_list_refreshing = true; // 刷新
                 this.onClassLoad();
-
             },
             //查看分类帖子
-            showClass:function(id){
+            showClass: function(id){
                 vant.Toast(id);
+            },
+            //创建分类
+            createTopic: function(){
+                App.temp.classId = this.class_list[this.class_index].id;
+                App.temp.className = this.class_list[this.class_index].name;
+                this.action = 'index/discover/create_class';
+                this.show_popup = true;
+            },
+            //关注话题
+            joinTopic: function (item, e){
+                e.stopPropagation();
+                App.es.ajax({
+                    cmd: "index.Topic.topicFollow",
+                    data: {
+                        type: item.follow,
+                        id: item.id
+                    }
+                }, function(e, a) {
+                    if (e) {
+                        if(e.code !== 0){
+                            item.follow = !item.follow;
+                            vant.Toast(e.message);
+                        }
+                    } else setTimeout(function() {
+                        page.mpage.loading = !1;
+                    }, 500);
+                });
+            },
+            //加入社团
+            joinAssoc: function (item, e){
+                e.stopPropagation();
+                //打开社团申请页
+                App.temp.assocId = item.id;
+                this.action = 'index/discover/join_assoc';
+                this.show_popup = true;
+
+            },
+            //切换tab
+            onTabs: function(index ,t){
+                var _this = this;
+                if(index == 0){
+                    //获取主分类栏目
+                    App.es.ajax({
+                        cmd: 'index.Discover.myList'
+                    },function(ret, err){
+                        if(ret){
+                            if(ret.code == 0){
+                                _this.my_topic = ret.result.topic;
+                                _this.my_assoc = ret.result.assoc;
+                                _this.onClassLoad();
+                            }else{
+                                _this.class_arr = [];
+                            }
+                        }else{
+                            vant.Toast('网络错误');
+                        }
+                    });
+                }
             }
+        },
+        mounted: function(){
+            var _this = this;
+            //获取主分类栏目
+            App.es.ajax({
+                cmd: 'index.Discover.classList'
+            },function(ret, err){
+                if(ret){
+                    if(ret.code == 0){
+                        _this.class_arr = ret.result.list;
+                        _this.onClassLoad();
+                    }else{
+                        _this.class_arr = [];
+                    }
+                }else{
+                    vant.Toast('网络错误');
+                }
+            });
         }
     });
-
-    (function(){
-        //获取主分类栏目
-        App.es.ajax({
-            cmd: 'index.posts.classList'
-        },function(ret, err){
-            if(ret){
-                if(ret.code == 0){
-                    page.discover.class_list = ret.result.list;
-                    page.discover.onClassLoad();
-                }else{
-                    page.discover.class_list = [];
-                }
-            }else{
-                vant.Toast('网络错误');
-            }
-        });
-
-    })();
 
 </script>

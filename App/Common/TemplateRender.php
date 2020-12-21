@@ -2,17 +2,15 @@
 namespace App\Common;
 
 use EasySwoole\Template\RenderInterface;
+use think\Template;
 
 class TemplateRender implements RenderInterface
 {
     protected $template;
     function __construct()
     {
-        $config = [
-            'view_path'	=>	EASYSWOOLE_ROOT.'/App/Views/',
-            'cache_path'	=>	EASYSWOOLE_ROOT.'/Temp/runtime/',
-        ];
-        $this->template = new \think\Template($config);
+        $config = config('view');
+        $this->template = new Template($config);
     }
 
     public function render(string $template, array $data = [], array $options = []): ?string
@@ -21,8 +19,7 @@ class TemplateRender implements RenderInterface
         ob_start();
         $this->template->assign($data);
         $this->template->fetch($template);
-        $content = ob_get_contents() ;
-        return $content;
+        return ob_get_contents();
     }
 
     public function afterRender(?string $result, string $template, array $data = [], array $options = [])

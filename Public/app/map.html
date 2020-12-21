@@ -1,0 +1,76 @@
+
+<template>
+
+    <van-nav-bar
+        fixed
+        id="appnav"
+        title="我的地点"
+        @click-left="onCloseShow"
+    >
+        <template #left>
+            <van-icon name="cross" size="23"  color="#c8c9cc"></van-icon>
+        </template>
+    </van-nav-bar>
+    <div style="height: 286px;"></div>
+
+
+</template>
+
+<script>
+
+    App.use(['NavBar'], vant);
+
+    //定义Vue实例
+    App.temp.article = new Vue({
+        el: '#app',
+        data: {
+        },
+        methods: {
+            onCloseShow: function() {
+                api.closeWin();
+            }
+        },
+        mounted: function(){
+            var nav = App.dom('#appnav');
+            var bMap = api.require('bMap');
+            bMap.open({
+                rect: {
+                    x: 0,
+                    y: nav.offsetHeight,
+                    w: api.winWidth,
+                    h: 240
+                },
+                center: {
+                    lon: 104.4021310000,
+                    lat: 28.9994480000
+                },
+                zoomLevel: 15,
+                showUserLocation: true,
+                fixedOn: api.frameName,
+                fixed: true
+            }, function(ret) {
+                if (ret.status) {
+                    bMap.getLocation({
+                        accuracy: '100m',
+                        autoStop: true,
+                        filter: 1
+                    }, function(ret, err) {
+                        if (ret.status) {
+                            // alert(JSON.stringify(ret));
+                            bMap.setCenter({
+                                coords: {
+                                    lon: ret.lon,
+                                    lat: ret.lat
+                                },
+                                animation: true
+                            });
+                        } else {
+                            alert(JSON.stringify(err));
+                        }
+                    });
+                }
+            });
+        }
+    });
+
+</script>

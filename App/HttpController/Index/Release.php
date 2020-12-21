@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace App\HttpController\Index;
 
 use App\Common\Utils;
@@ -49,7 +49,7 @@ class Release extends BaseAuth
             }
 
             foreach($files as $f){
-                echo "上传文件：".$f->getTempName()." 大小：".$f->getSize()." 类型：".$f->getClientMediaType()."\n";
+//                echo "上传文件：".$f->getTempName()." 大小：".$f->getSize()." 类型：".$f->getClientMediaType()."\n";
 
                 $tmpName = $f->getTempName();
                 $size = getimagesize($tmpName);
@@ -70,8 +70,7 @@ class Release extends BaseAuth
                 }
 
                 $f_path = 'posts/i/'.date('ymd').'/'.md5($tmpName.rand(1000,9999)).'.jpg';
-                list($err, $ret) = Utils::saveFile($fname, $f_path, 'oss');
-
+                list($err, $ret) = Utils::saveFile($fname, $f_path);
                 if($ret){
                     $fileItem[] = $f_path;
                 }else{
@@ -88,7 +87,7 @@ class Release extends BaseAuth
                 //预览图上传
                 $tmpName = $files['thumb']->getTempName();
                 $f_path = 'posts/v/'.date('ymd').'/'.md5($tmpName.rand(1000,9999)).'.jpg';
-                list($err, $ret) = Utils::saveFile($tmpName, $f_path, 'oss');
+                list($err, $ret) = Utils::saveFile($tmpName, $f_path);
 
                 if($ret){
                     $fileItem[] = $f_path;
@@ -99,7 +98,7 @@ class Release extends BaseAuth
                 //视频上传
                 $tmpName = $files['video']->getTempName();
                 $f_path = 'posts/v/'.date('ymd').'/'.md5($tmpName.rand(1000,9999)).'.mp4';
-                list($err, $ret) = Utils::saveFile($tmpName, $f_path, 'oss');
+                list($err, $ret) = Utils::saveFile($tmpName, $f_path);
 
                 if($ret){
                     $fileItem[] = $f_path;
@@ -107,8 +106,6 @@ class Release extends BaseAuth
                     $file_err = true;
                 }
 
-            }else{
-                echo "没有文件\n";
             }
         }
 
@@ -124,15 +121,16 @@ class Release extends BaseAuth
 
         //开始保存帖子
         $check = Article::create([
-            'uid' => $sess['id'],
-            'title' => $post['content'],
-            'content' => $post['content'],
-            'type' => $post['type'],
+            'uid'      => $sess['id'],
+            'title'    => $post['content'],
+            'content'  => $post['content'],
+            'type'     => $post['type'],
             'resource' => implode(',',$fileItem),
-            'class' => $post['class']
+            'tid'    => $post['class'] //话题
         ])->save();
-
         if($check){
+            User::create()->get($sess['id'])->setInfo(['posts' => [1, 'add']]);
+
             $this->withData(0, '发布成功', [
                 'id' => $check
             ]);
@@ -145,7 +143,6 @@ class Release extends BaseAuth
             ])->save();
             return $this->withData(0, '帖子保存出错');
         }
-
     }
 
 }

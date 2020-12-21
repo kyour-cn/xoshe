@@ -28,7 +28,6 @@ class Oss
         if($this->client != null){
             return [null, $this->client];
         }
-
         try{
             $this->client = new OssClient($this->config['AccessKey'], $this->config['Secret'], $this->config['Endpoint']);
             return [null, $this->client];
@@ -39,8 +38,10 @@ class Oss
 
     /**
      * 上传文件
-     * @param $file 本地文件地址
-     * @param $path 保存路径(包含文件名)
+     * @param $file string 本地文件地址
+     * @param $path string 保存路径(包含文件名)
+     * @param $delSource bool 是否删除源文件
+     * @return array
      */
     public function upload(string $file, string $path, bool $delSource = false) :array
     {
@@ -49,20 +50,34 @@ class Oss
         if($err){
             return [$err,null];
         }
-
         try{
             //开始上传文件
-            $ret = $this->client->uploadFile($this->config['Bucket'], $path, $file);
-
+            $ret = $client->uploadFile($this->config['Bucket'], $path, $file);
             //删除源文件
             $delSource && unlink($file);
-
             return [null, $ret];
         } catch(OssException $e) {
             //返回报错
             return [$e, null];
         }
-
     }
 
+    /**
+     * 删除文件
+     * @param $path string 保存路径(包含文件名)
+     * @return array
+     */
+    public function delete(string $path) :array
+    {
+        //连接云端
+        list($err, $client) = $this->conn();
+        if($err) return [$err,null];
+        try{
+            $ret = $client->deleteObject($this->config['Bucket'], $path);
+            return [null, $ret];
+        } catch(OssException $e) {
+            //返回报错
+            return [$e, null];
+        }
+    }
 }

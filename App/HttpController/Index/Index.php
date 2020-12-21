@@ -2,30 +2,18 @@
 namespace App\HttpController\Index;
 
 // use App\Common\Utils;
+use App\Model\Identity;
 use EasySwoole\Validate\Validate;
-use App\Model\Article;
-use App\Model\User as UserModel;
 
 class Index extends BaseAuth
 {
+    public $authRule = [];
 
     //项目首页
     public function index()
     {
         //读取静态文件返回
-        $file = EASYSWOOLE_ROOT . '/Public/index.html';
-        $this->response()->write(file_get_contents($file));
-    }
-
-    //二维码测试
-    public function qrcode()
-    {
-        $qrCode = new \Endroid\QrCode\QrCode('Life is too short to be generating QR codes');
-
-        // header('Content-Type: '.$qrCode->getContentType());
-        $this->response()->withHeader('Content-type',$qrCode->getContentType());
-        $this->write($qrCode->writeString());
-
+        $this->fetch('index', [], 'raw');
     }
 
     //短信验证码
@@ -92,47 +80,54 @@ class Index extends BaseAuth
         $this->session('img_code',$veriNum);
     }
 
-    //语音合成
+    //语音合成测试
     public function tts()
     {
-        // require_once 'AipSpeech.php';
+        // 你的 APPID AK SK
+        $appId = '15589554';
+        $appKey = '6OyjIGp6tZszfuTuLh8cQzvY';
+        $appSecret = '8AXVW7FbHd5V5BTIwrl0ZhzOGDTOZsO3';
 
-// 你的 APPID AK SK
-$appId = '15589554';
-$appKey = '6OyjIGp6tZszfuTuLh8cQzvY';
-$appSecret = '8AXVW7FbHd5V5BTIwrl0ZhzOGDTOZsO3';
+        $client = new \App\Common\Extend\BaiduTTS\AipSpeech($appId, $appKey, $appSecret);
 
-$client = new \App\Common\Extend\BaiduTTS\AipSpeech($appId, $appKey, $appSecret);
+        $result = $client->synthesis('小猿社，专注同城娱乐', 'zh', 1, [
+            'vol' => 5,
+            // 'pit' => 3,
+            'per' => '5118'
+        ]);
 
-$result = $client->synthesis('皮皮搞笑，温暖快乐的家', 'zh', 1, [
-    'vol' => 5,
-    // 'pit' => 3,
-    'per' => '5118'
-]);
+        // 识别正确返回语音二进制 错误则返回json 参照下面错误码
+        if(!is_array($result)){
+            $this->response()->withHeader('Content-Type','image/mpeg');
+            $this->response()->withHeader('Accept-Ranges','bytes');
 
-// 识别正确返回语音二进制 错误则返回json 参照下面错误码
-if(!is_array($result)){
-    $this->response()->withHeader('Content-Type','image/mpeg');
-    $this->response()->withHeader('Accept-Ranges','bytes');
+            $this->write($result);
 
-    $this->write($result);
-
-    // file_put_contents('audio.mp3', $result);
-}
+            // file_put_contents('audio.mp3', $result);
+        }else{
+            $this->write($result);
+        }
 
     }
 
-    // 容器测试
+    //二维码测试
+    public function qrcode()
+    {
+        $qrCode = new \Endroid\QrCode\QrCode('Life is too short to be generating QR codes');
+
+        // header('Content-Type: '.$qrCode->getContentType());
+        $this->response()->withHeader('Content-type',$qrCode->getContentType());
+        $this->write($qrCode->writeString());
+
+    }
+
+    // 权限验证测试
     public function test()
     {
-        $get = container('test');
+        $sess = $this->session('user');
+        $check = Identity::check('release', $sess['id']);
 
-        if(!$get){
-            $get = time();
-            container('test',$get);
-        }
-        
-        $this->write($get);
+        $this->write($check?'1':'2');
     }
 
 }

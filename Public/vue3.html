@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, initial-scale=1.0, width=device-width"/>
+    <meta name="format-detection" content="telephone=no, email=no, date=no, address=no">
+
+    <link rel="stylesheet" href="/static/extend/vant/vant3.min.css" />
+
+</head>
+<body>
+
+<section id="app">
+    <van-button type="primary">主要按钮</van-button>
+    <van-button type="success">成功按钮</van-button>
+    <van-button type="default">默认按钮</van-button>
+    <van-button type="warning">警告按钮</van-button>
+    <van-button type="danger" @click="login">{{data.time}}</van-button>
+
+    {{data.username}}
+
+</section>
+
+</div>
+
+<script src="/static/extend/js/vue3.min.js"></script>
+<script src="/static/extend/vant/vant3.min.js"></script>
+
+<script type="text/javascript">
+
+
+
+    // var app = Vue.createApp({
+    //     setup: function() {
+    //         var t = Vue.reactive({
+    //             username: "11",
+    //             time: 0
+    //         }), e = function() {
+    //             vant.Toast("login"), t.time++;
+    //         };
+    //         return Vue.onMounted(function() {
+    //             var _data = t;
+    //             setInterval(function() {
+    //                 _data.time++
+    //             }, 1000);
+    //         }), {
+    //             data: t,
+    //             login: e
+    //         };
+    //     }
+    // });
+
+    var app = Vue.createApp({
+        setup: function() {
+            var data = Vue.reactive({
+                username: "11",
+                time: 0
+            });
+
+            //事件注册
+            Vue.onMounted(function() {
+                var _data = data;
+                setInterval(function() {
+                    _data.time++
+                }, 500);
+
+                setTimeout(function (){
+                    app.$destroy()
+                },5000)
+            });
+            //返回构造
+            return {
+                data: data,
+                //方法定义
+                login: function() {
+                    vant.Toast("login");
+                    data.time++;
+                }
+            }
+        }
+    });
+    app.use(vant);
+    app.use(vant.Button);
+    app.mount('#app');
+
+
+    // 在 #app 标签下渲染一个按钮组件
+    // const app = Vue.createApp({
+    //     // template: `<van-button>按钮</van-button>`,
+    //     setup () {
+    //
+    //         const data = Vue.reactive({
+    //             username: '11',
+    //             time: 0
+    //         });
+    //
+    //         //函数定义
+    //         const login = () => {
+    //             // 登陆方法
+    //             vant.Toast('login');
+    //
+    //             data.time++;
+    //         }
+    //
+    //         //事件注册
+    //         Vue.onMounted(() => {
+    //             var _this = this;
+    //             setInterval(()=>{
+    //                 // _this.state.time++;
+    //             },100)
+    //         });
+    //         return {
+    //             data,
+    //             login,
+    //         }
+    //     }
+    // });
+
+    // 调用函数组件，弹出一个 Toast
+
+    // 通过 CDN 引入时不会自动注册 Lazyload 组件
+    // 可以通过下面的方式手动注册
+    // app.use(vant.Lazyload);
+</script>
+</body>
+</html>

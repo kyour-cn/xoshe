@@ -1,7 +1,5 @@
 
-<div>
-  <!--@click-left="onClickLeft"-->
-  <!--@click-right="onClickRight"-->
+<template>
     <van-nav-bar
         title="个人中心"
         left-text="返回"
@@ -10,9 +8,10 @@
         @click-left="onClickLeft"
         @click-right="onLogout"
     ></van-nav-bar>
+    <div style="height: 46px;"></div>
 
-    <div style="text-align: center;padding: 2rem 0;">
-        <img style="border-radius: 50%;" src="http://q1.qlogo.cn/g?b=qq&nk=1270701414&s=100&t=" alt="" />
+    <div style="text-align: center;padding: 2rem 0;" @click="upAvatar">
+        <img style="border-radius: 50%;width: 100px;" :src="App.res+page.uhome.user.avatar" />
         <br />
         <span style="color: #666;">点击更换头像</span>
     </div>
@@ -21,7 +20,7 @@
         <van-field v-model="user.nickname" label="用户名" placeholder="请输入用户名"></van-field>
     </van-cell-group>
     <van-cell-group>
-        <van-field v-model="user.sign" label="签名" placeholder="请输入用户名"></van-field>
+        <van-field v-model="user.sign" maxlength="32" label="签名" placeholder="请输入签名"></van-field>
     </van-cell-group>
     <van-cell-group>
         <van-field name="sex" label="性别">
@@ -34,7 +33,7 @@
         </van-field>
     </van-cell-group>
     <van-cell-group>
-        <van-field v-model="user.born" type="date" label="出生日期" placeholder="请输入用户名"></van-field>
+        <van-field v-model="user.born" type="date" label="出生日期" placeholder="请选择日期"></van-field>
     </van-cell-group>
 
     <div style="margin: 1rem;">
@@ -42,7 +41,7 @@
           提交
         </van-button>
     </div>
-</div>
+</template>
 <script>
 
     //导入组件 form vant
@@ -61,41 +60,45 @@
                 page.uhome.show_popup = false;
             },
             onLogout: function(){
-                $.ajax({
-                    url: App.href + 'index/user/logout',
-                    success: function (ret) {
+                App.ajax({
+                    url: 'index/user/logout'
+                },function (ret, err) {
+                    if(ret){
                         vant.Toast(ret.message);
                         setTimeout(function(){
                             page.uhome.show_popup = false;
                             page.uhome.getInfo();
                         }, 500);
-                    },
-                    error: function() {
+                    }else{
                         vant.Toast.fail('网络错误');
                     }
                 });
             },
             saveInfo: function(){
-                $.ajax({
-                    url: App.href + 'index/user/updateInfo',
-                    method: 'POST',
+                App.ajax({
+                    url: 'index/user/updateInfo',
+                    method: 'post',
                     data: {
                         nickname: this.user.nickname,
                         sign: this.user.sign,
                         sex: this.user.sex,
                         born: this.user.born
-                    },
-                    success: function(ret) {
+                    }
+                },function (ret, err) {
+                    if(ret){
                         vant.Toast(ret.message);
                         if(ret.status)
-                        setTimeout(function(){
-                            page.uhome.show_popup = false;
-                        }, 500);
-                    },
-                    error: function() {
+                            setTimeout(function(){
+                                page.uhome.show_popup = false;
+                            }, 500);
+                    }else{
                         vant.Toast.fail('网络错误');
                     }
                 });
+            },
+            upAvatar: function(){
+                if(page.uhome.upopup && page.uhome.upopup.$destroy) page.uhome.upopup.$destroy();
+                App.load('#user-popup',App.href + 'index/user/upavatar');
             }
         },
         watch: {

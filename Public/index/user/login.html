@@ -1,12 +1,10 @@
 
-<div>
-  <!--@click-left="onClickLeft"-->
-  <!--@click-right="onClickRight"-->
+<template>
     <van-nav-bar
         title="登录"
         left-text="返回"
-        right-text="注册"
         left-arrow
+        right-text="注册"
         @click-left="onClickLeft"
         @click-right="onRegist"
     ></van-nav-bar>
@@ -36,7 +34,7 @@
         </div>
     </van-form>
 
-</div>
+</template>
 <script>
 
     //导入组件 form vant
@@ -51,34 +49,33 @@
             password: '',
         },
         methods: {
+            onClickLeft: function(){
+                page.uhome.show_popup = false;
+            },
             onSubmit(values) {
                 if(this.loging) return;
                 this.loging = true;
-                $.ajax({
-                    url: App.href + 'index/user/loginApi',
-                    method: 'POST',
-                    data: values,
-                    success: function (ret) {
+
+                App.ajax({
+                    url: 'index/user/loginApi',
+                    method: 'post',
+                    data: values
+                },function (ret, err) {
+                    if(ret){
                         page.uhome.upopup.loging = false;
                         vant.Toast(ret.message);
-                        setTimeout(function() {
+                        if(ret.code === 0) setTimeout(function() {
                             page.uhome.show_popup = false;
                             page.uhome.getInfo();
                         }, 500);
-                    },
-                    error: function () {
-                        page.uhome.upopup.loging = false;
+                    }else{
                         vant.Toast.fail('网络错误');
                     }
                 });
             },
-            onClickLeft: function(){
-                page.uhome.show_popup = false;
-                // page.tabbar = 0; // 跳到首页
-            },
             onRegist: function(){
                 if(page.uhome.upopup && page.uhome.upopup.$destroy) page.uhome.upopup.$destroy();
-                $('#user-popup').load(App.href + 'index/user/regist');
+                App.load('#user-popup',App.href + 'index/user/regist');
             }
         }
     });

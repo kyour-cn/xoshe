@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace App\HttpController;
 
 use EasySwoole\Http\AbstractInterface\Controller;
@@ -78,15 +78,22 @@ class BaseController extends Controller
     }
 
     //输出渲染模板
-    public function fetch(string $name, array $param = []): void
+    public function fetch(string $name, array $param = [], string $type = 'think'): void
     {
-        //判断是否已有参数
-        if($this->assignData){
-            //合并数据
-            $param = array_merge($this->assignData, $param);
+        if($type == 'think'){
+            //判断是否已有参数
+            if($this->assignData){
+                //合并数据
+                $param = array_merge($this->assignData, $param);
+            }
+            //渲染输出
+            $this->response()->write(Render::getInstance()->render($name,$param));
+        }elseif($type == 'raw'){
+            //直接输出
+            $conf = config('view');
+            $file = $conf['view_path'] . $name . '.' .$conf['view_suffix'] ;
+            $this->response()->write(file_get_contents($file));
         }
-        //渲染输出
-        $this->response()->write(Render::getInstance()->render($name,$param));
 
     }
 
@@ -107,8 +114,9 @@ class BaseController extends Controller
      * api接口返回数据，封装统一规则
      * @param int $code 错误代码，0为无错误
      * @param string $msg 响应提示文本
-     * @param array $data 响应数据主体
+     * @param array|object $result 响应数据主体
      * @param int $count 统计数量，用于列表分页
+     * @return bool
      */
     public function withData(int $code = 0, string $msg = '', $result = [], int $count = -1)
     {
@@ -125,6 +133,7 @@ class BaseController extends Controller
         $this->response()->withHeader('Access-Control-Allow-Origin','*'); //*.kyour.cn
         $this->write(json_encode($ret));
 
+        return true;
     }
 
     // function onException(\Throwable $throwable): void

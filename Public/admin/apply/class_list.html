@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="stylesheet" href="/admin/component/pear/css/pear.css" />
+</head>
+<body>
+<body class="pear-container">
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <table id="user-table" lay-filter="user-table"></table>
+    </div>
+</div>
+</body>
+
+<script type="text/html" id="user-toolbar">
+
+    <form class="layui-form" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">名称</label>
+            <div class="layui-input-inline">
+                <input type="text" name="realName" placeholder="" class="layui-input">
+            </div>
+            <label class="layui-form-label">账号</label>
+            <div class="layui-input-inline">
+                <input type="text" name="username" placeholder="" class="layui-input">
+            </div>
+            <button class="pear-btn pear-btn-md pear-btn-primary" lay-submit lay-filter="user-query">
+                <i class="layui-icon layui-icon-search"></i>
+                查询
+            </button>
+            <button type="reset" class="pear-btn pear-btn-md">
+                <i class="layui-icon layui-icon-refresh"></i>
+                重置
+            </button>
+        </div>
+    </form>
+</script>
+
+<script type="text/html" id="user-bar">
+    <button class="pear-btn pear-btn-primary pear-btn-sm" lay-event="edit"><i class="layui-icon layui-icon-edit"></i></button>
+    <button class="pear-btn pear-btn-danger pear-btn-sm" lay-event="remove"><i class="layui-icon layui-icon-delete"></i></button>
+</script>
+
+<div style="display: none;" id="edit-box">
+    <div style="padding:20px;text-align: center;">
+
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">处理</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="type" value="1" title="通过" checked>
+                    <input type="radio" name="type" value="2" title="驳回">
+                </div>
+            </div>
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">处理结果</label>
+                <div class="layui-input-block">
+                    <textarea name="result" placeholder="请输入处理结果" class="layui-textarea"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="handle">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script src="/admin/component/layui/layui.js"></script>
+<script src="/admin/component/pear/pear.js"></script>
+<script>
+    let $,eidtId;
+    layui.use(['table', 'form', 'jquery'], function() {
+        let table = layui.table, form = layui.form;
+        $ = layui.jquery;
+
+        table.render({
+            elem: '#user-table',
+            url: '/admin/Apply/getClassList',
+            page: true,
+            skin: 'line',
+            toolbar: '#user-toolbar',
+            cols: [[
+                {type: 'checkbox', width: 50},
+                {title: 'ID', field: 'id', align: 'center', width: 100},
+                {title: '标题', field: 'title', align: 'center', width: 200},
+                {title: '用户', field: '', align: 'center', width: 200, templet: '<div>{{d.user.id}}: {{d.user.nickname}}</div>'},
+                {title: '类型', field: 'type', align: 'center', width: 100},
+                {title: '说明', field: 'content', align: 'center'},
+                {title: '状态', field: 'status', align: 'center'},
+                {title: '图标', field: '', align: 'center', templet: '<div><img src="{{d.data.avatar}}" style="height: 100%;" /></div>'},
+                {title: '操作', toolbar: '#user-bar', align: 'center', width: 130}
+            ]],
+            even: true,
+            defaultToolbar: [{layEvent: 'refresh', icon: 'layui-icon-refresh'}, 'filter', 'exports'],
+            parseData(res){
+                return res.result;
+            }
+        });
+
+        table.on('tool(user-table)', function(obj) {
+            if (obj.event === 'remove') {
+                console.log(obj)
+            } else if (obj.event === 'edit') {
+                console.log(obj.data)
+                eidtId = obj.data.id;
+                layer.open({
+                    type: 1,
+                    title: '审核',
+                    content: $('#edit-box'),
+                    area:['450px','500px']
+                });
+            }
+        });
+
+        table.on('toolbar(user-table)', function(obj) {
+            if (obj.event === 'refresh') {
+                table.reload('user-table');
+            }
+        });
+
+        form.on('submit(user-query)', function(data) {
+            table.reload('user-table', {
+                where: data.field
+            })
+            return false;
+        });
+
+        //提交处理
+        form.on('submit(handle)', function(data) {
+            data.field.id = eidtId;
+            $.ajax({
+                url: '/admin/apply/classHandle',
+                data: data.field,
+                method: 'POST',
+                success: function(res) {
+                    if (res.code  == 0) {
+                        layer.msg(res.message, { icon: 6, time: 3000 }, function () {
+                            table.reload('user-table', {
+                                where: data.field
+                            });
+                        });
+                    } else {
+                        layer.msg(res.message, { icon: 5,time: 3000 });
+                    }
+                },
+                error: function (err) {
+                    layer.msg('系统错误', { icon: 5,time: 3000 });
+                }
+            });
+            return false;
+        });
+
+    })
+</script>
+</body>
+</html>

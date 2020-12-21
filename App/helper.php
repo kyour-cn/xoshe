@@ -1,20 +1,20 @@
 <?php declare(strict_types=1);
 
-define('SWORD_NULL',"SWORD_NULL_VALUE");
+define('SWORD_NULL', "SWORD_NULL_VALUE");
 
-//容器
-// $sword_container = [];
+define('SWORD_REDIS_EXISTS', "SWORD_REDIS_EXISTS_VALUE");
 
 if (!function_exists('container')) {
     /**
      * 获取容器中App实例
+     * @param string $name
+     * @param string $value
+     * @return array|bool|mixed|null
      */
     function container($name = SWORD_NULL, $value = SWORD_NULL)
     {
 
         $ins = App\Common\Container::getInstance();
-
-        // global $sword_container;
 
         // 无参数时获取所有
         if($name === SWORD_NULL or is_null($name)){
@@ -24,12 +24,10 @@ if (!function_exists('container')) {
         //取容器中某一个实例,使用SWORD_NULL是为了避免value传入的是null
         if($value === SWORD_NULL){
             return $ins->get($name);
-            // return isset($sword_container[$name])?$sword_container[$name]:null;
         }
 
         //设置容器
         $ins->set($name,$value);
-        // $sword_container[$name] = $value;
 
         return true;
 
@@ -39,15 +37,15 @@ if (!function_exists('container')) {
 if (!function_exists('config')) {
     /**
      * 获取容器中配置文件
+     * @param string $name
+     * @param null $default
+     * @return array|mixed|null
      */
     function config(string $name = SWORD_NULL, $default = null)
     {
         $ins = App\Common\Container::getInstance();
 
-        // global $sword_container;
-
         $config = $ins->get('sword_config')?:[];
-        // $sword_container['sword_config']??[];
 
         // 未初始化配置 -加载config文件夹的配置
         if(!$config){
@@ -95,6 +93,11 @@ if (!function_exists('config')) {
 if (!function_exists('cache')) {
     /**
      * redis缓存工具
+     * @param mixed $name
+     * @param string $value
+     * @param mixed $expire
+     * @return bool|mixed|null
+     * @throws \EasySwoole\Redis\Exception\RedisException
      */
     function cache($name = null, $value = SWORD_NULL, $expire = null)
     {
@@ -104,6 +107,11 @@ if (!function_exists('cache')) {
             return null;
         }
         $redis = \App\Common\Utils::getRedis();
+
+        //判断是否存在
+        if($value == SWORD_REDIS_EXISTS){
+            return $redis->exists($name);
+        }
 
         //删除数据
         if($value === null){

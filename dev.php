@@ -13,7 +13,7 @@ return [
             'max_wait_time'=> 3,
 
             //兼容文件上传最大值
-            'package_max_length' => 10 *1024*1024
+            'package_max_length' => 20 * 1024 * 1024
         ],
         'TASK' => [
             'workerNum' => 4,

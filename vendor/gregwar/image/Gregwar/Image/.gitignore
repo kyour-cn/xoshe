@@ -1,7 +1,0 @@
-demo/cache
-demo/out.jpg
-**.swp
-vendor
-composer.lock
-/phpunit.xml
-/.php_cs.cache

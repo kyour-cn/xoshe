@@ -1,0 +1,69 @@
+
+<template>
+    <van-nav-bar
+        fixed
+        id="appnav"
+        title="扫一扫"
+        @click-left="onCloseShow"
+    >
+        <template #left>
+            <van-icon name="cross" size="23" color="#c8c9cc"></van-icon>
+        </template>
+    </van-nav-bar>
+    <div style="height: 286px;"></div>
+</template>
+
+<script>
+
+    App.use(['NavBar'], vant);
+
+    //定义Vue实例
+    App.temp.article = new Vue({
+        el: '#app',
+        data: {},
+        methods: {
+            onCloseShow: function() {
+                api.closeWin();
+            }
+        },
+        mounted: function(){
+            var nav = App.dom('#appnav');
+
+            var FNScanner = api.require('FNScanner');
+            FNScanner.openView({
+                autorotation: true,
+                rect: {
+                    x: 0,
+                    y: nav.offsetHeight + api.safeArea.top,
+                    w: api.winWidth,
+                }
+            }, function(ret, err) {
+                if(ret){
+                    switch (ret.eventType) {
+                        case 'success':
+                            FNScanner.onPause();
+                            alert(ret.content);
+                            break;
+                        default:
+                            break;
+                    }
+                }else{
+                    alert(JSON.stringify(err));
+                }
+            });
+
+            api.addEventListener({
+                name:'resume'
+            }, function(ret, err){
+                FNScanner.onResume();
+            });
+            api.addEventListener({
+                name:'pause'
+            }, function(ret, err){
+                FNScanner.onPause();
+            });
+
+        }
+    });
+
+</script>

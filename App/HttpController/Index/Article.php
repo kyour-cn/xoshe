@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace App\HttpController\Index;
 
 use App\Common\Utils;

@@ -7,6 +7,9 @@
     <meta name="format-detection" content="telephone=no, email=no, date=no, address=no">
 
     <link rel="stylesheet" href="/static/extend/vant/vant.min.css" />
+    <link rel="stylesheet" href="/static/extend/fontawesome/css/all.min.css">
+<!--    <link rel="stylesheet" href="/static/css/index/main.css">-->
+
     <style>
         .wrapper {
             display: flex;
@@ -25,48 +28,59 @@
     <div id="app-view">
         <van-overlay :show="overlay">
             <div class="wrapper">
-                加载中
+                <van-loading size="40"></van-loading>
+            </div>
+        </van-overlay>
+
+        <van-overlay :show="adshow">
+            <div style="width: 100%;height: 100%;background: #ddd;display: none;" id="adBox">
+                <div style="width:100%;height:100%;position:absolute;z-index: 100;">
+                    <div style="position:absolute;right: 0.5rem;top:0.5rem;background-color:rgba(150,150,150,0.5);border-radius: 0.4rem;" @click="adshow=false">
+                        <p style="margin:0;padding:0.25rem 0.5rem;">跳过 {{ad.countdown}}</p>
+                    </div>
+                    <img :src="ad.pic" style="width: 100%;">
+                    <div style="position:absolute;bottom: 0;background-color:rgba(150,150,150,0.5);width:100%;padding:0.5rem 1rem 1rem 1rem;">
+                        <van-row>
+                            <van-col span="6">
+                                <img :src="App.href+'static/image/icon.png'" style="width:2.5rem;padding-top:0.5rem;">
+                            </van-col>
+                            <van-col span="18">
+                                <p style="font-size:1.5rem;margin: 0;color:#eaeaea;font-weight:900;">{{ad.title}}</p>
+                                <p style="margin: 0;color:#eaeaea;">{{ad.content}}</p>
+                            </van-col>
+                        </van-row>
+                    </div>
+                </div>
+                <div :style="'width:100%;height:100%;background: url('+ad.bgpic+') no-repeat;z-index: 99;'" class="filter">
+                </div>
             </div>
         </van-overlay>
     </div>
 
-<!--    <script src="/static/extend/js/jquery-ajax.min.js"></script>-->
-<!--    <script src="/static/extend/js/vue.min.js"></script>-->
-<!--    <script src="/static/extend/vant/vant.min.js"></script>-->
-    <script src="/static/js/dependent.js"></script>
-    <script src="/static/extend/easysocket/easysocket.js"></script>
-    <script src="/static/js/app.js"></script>
+    <script src="/static/extend/js/vue.min.js"></script>
+    <script src="/static/extend/js/axios.min.js"></script>
+    <script src="/static/extend/vant/vant.min.js"></script>
+    <script src="/static/extend/easysocket/easysocket.min.js"></script>
+    <script src="/static/js/app.min.js"></script>
+    <script src="/index/app/script"></script>
 
-    <script type="text/javascript" charset="utf-8">
+    <script type="text/javascript">
+
+    if(document.body.clientWidth > 700){
+        vant.Toast('请使用手机打开');
+    }
 
     //应用信息 -Web版
-    App.name = '小猿社';
-    App.host = 'mk.kyour.cn';
-    App.href = document.location.protocol + '//'+ App.host +'/';
-    App.local = '/';
-    App.res = 'http://res-mk.kyour.cn/';
+    App.href = document.location.protocol + "//"+ App.host +"/";
+    App.local = "/";
 
-    /* App和web以下内容相同 */
+    //是否App中运行
+    App.isApp = false;
 
-    //页面vue实例
-    var page = null;
-
-    //导入组件 form vant
-    App.use(['Overlay', 'Button', 'NavBar', 'Col', 'Row', 'Empty', 'Icon'], vant);
-
-    App.view = new Vue({
-        el: '#app-view',
-        data: {
-            title: '',
-            //加载遮罩
-            overlay: true
-        }
-    });
-
-    //WebSocket连接
+    //创建WebSocket
     App.es = new EasySocket({
-        url: (document.location.protocol == 'https:' ?
-            'wss://'+App.host+':443' : 'ws://'+App.host),
+        url: (document.location.protocol === 'https:' ?
+            'wss://'+App.host+':443' : 'ws://'+App.host) + '/ws',
         heart: {
             cmd: 'index.heart',
             data: function (){
@@ -82,33 +96,83 @@
         debug: true
     });
 
-    App.es.init(function(){
 
-        //连接成功 -发送一次心跳
-        App.es.sendHeart();
+    App.view = new Vue({
+        el: '#app-view',
+        data: {
+            //加载遮罩
+            overlay: true,
+            adshow: true,
+            ad: App.temp.adData
+        },
+        mounted: function(){
 
+            App.dom('#adBox').style.display = 'block';
+
+            var _this = this;
+            App.temp.timer = setInterval(function(){
+                _this.ad.countdown --;
+                if(_this.ad.countdown <= 0){
+                    _this.adshow = false;
+                    clearInterval(App.temp.timer);
+                    //广告结束
+                    App.dom('#adBox').innerHTML = '';
+                }
+            }, 1000);
+
+            App.setTitle(App.name);
+
+            //开始连接WebSocket
+            App.es.init(function(){
+
+                //连接成功 -发送一次心跳
+                App.es.sendHeart();
+
+                //取出当前地址
+                var href = window.location.href;
+                var index = href.indexOf("#");
+                if(index == -1){
+                    index = href.length;
+                }
+
+                var url = href.substr(index +1);
+                if(!url){
+                    //加载新模板页面
+                    url = App.href + 'index/main';
+                }
+                App.route.push(url);
+                App.open(url, false);
+
+            });
+
+            var ua = navigator.userAgent.toLowerCase();
+            //检测qq微信
+            if(ua.match(/MicroMessenger\/[0-9]/i) || ua.match(/QQ\/[0-9]/i)){
+                setTimeout(function () {
+                    vant.Dialog.confirm({
+                        title: '检测您在微信|QQ中打开',
+                        message: '为了您更好的使用体验完整功能，请下载App',
+                    })
+                        .then(function () {
+                            location.href = '/download';
+                        }).catch(function (){});
+                },2000)
+            }
+
+        }
     });
 
-    $(function(){
 
-        App.setTitle(App.name);
 
-        //取出当前地址
-        var href = window.location.href;
-        var index = href.indexOf("#");
-        if(index == -1){
-            index = href.length;
-        }
+    //页面vue实例
+    var page = null,vapp = false;
 
-        var url = href.substr(index +1);
-        if(!url){
-            //加载新模板页面
-            url = App.href + 'index/main';
-        }
-        App.route.push(url);
-        App.open(url, false);
-
-    });
+    //导入组件 form vant
+    App.use([
+        'Overlay', 'Button', 'NavBar',
+        'Col', 'Row', 'Empty', 'Icon',
+        'Loading'
+    ], vant);
 
     </script>
 </body>

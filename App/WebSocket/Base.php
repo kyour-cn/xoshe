@@ -24,7 +24,7 @@ class Base
     }
 
     //Session操作
-    public function session(string $key, $data = SWORD_NULL, $expire = null)
+    public function session(string $key = SWORD_NULL, $data = SWORD_NULL, $expire = null)
     {
         // $args = $this->caller()->getArgs();
         $args = $this->args;
@@ -36,7 +36,9 @@ class Base
 
         $value = cache($args[$sname]);
 
-        if($data == SWORD_NULL){
+        if($key == SWORD_NULL){
+            return $value;
+        }elseif($data == SWORD_NULL){
             return $value[$key] ?? null;
         }elseif($data == null){
             unset($value[$key]);
@@ -48,13 +50,29 @@ class Base
     }
 
     /**
+     * 获取sessionId
+     * @return bool|string
+     */
+    public function sessionId()
+    {
+        $args = $this->args;
+
+        $sname = config('session.sessionName');
+        if(empty($args[$sname])){
+            return false;
+        }
+        return $args[$sname];
+    }
+
+    /**
      * api接口返回数据，封装统一规则
      * @param int $code 错误代码，0为无错误
      * @param string $msg 响应提示文本
-     * @param array $data 响应数据主体
+     * @param array|object $result 响应数据主体
      * @param int $count 统计数量，用于列表分页
+     * @return bool
      */
-    public function withData(int $code = 0, string $msg = '', $result = [], int $count = -1)
+    public function withData(int $code = 0, string $msg = '', $result = [], int $count = -1): bool
     {
         $ret = [
             'status' => $code?0:1,
@@ -73,6 +91,7 @@ class Base
         // echo json_encode($ret, JSON_UNESCAPED_UNICODE)."\n";
         $this->response->setMessage(json_encode($ret));
 
+        return true;
     }
 
 }

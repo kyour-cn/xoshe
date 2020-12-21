@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Login Admin</title>
+		<link rel="stylesheet" href="component/pear/css/pear.css" />
+		<link rel="stylesheet" href="/admin/static/css/other/login.css" />
+	</head>
+    <!-- 代 码 结 构 -->
+	<body background="/admin/static/images/background2.svg" style="background-size: cover;">
+		<form class="layui-form" action="javascript:void(0);">
+			<div class="layui-form-item">
+				<img class="logo" src="/admin/static/images/logo.png" />
+				<div class="title">管理后台</div>
+				<div class="desc">
+					空谈不如实干，踱步何不向前。
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<input placeholder="账 号" name="username" hover class="layui-input" />
+			</div>
+			<div class="layui-form-item">
+				<input placeholder="密 码" name="password" hover class="layui-input" />
+			</div>
+			<div class="layui-form-item">
+				<input placeholder="验证码 : " name="imgcode" hover class="code layui-input layui-input-inline"  />
+				<img onclick="this.src='/index/imgcode?'+Math.random();" style="width: 5rem;" src="/index/imgcode" class="codeImage" />
+			</div>
+			<div class="layui-form-item">
+				<input type="checkbox" name="" title="记住密码" lay-skin="primary" checked>
+			</div>
+			<div class="layui-form-item">
+				<button class="pear-btn pear-btn-success login" lay-submit lay-filter="login">
+					登 入
+				</button>
+			</div>
+		</form>
+		<!-- 资 源 引 入 -->
+		<script src="/admin/component/layui/layui.js"></script>
+		<script src="/admin/component/pear/pear.js"></script>
+		<script>
+			layui.use(['form', 'element', 'jquery', 'button', 'popup'], function() {
+				var form = layui.form;
+				var element = layui.element;
+				var button = layui.button;
+				var popup = layui.popup;
+				var $ = layui.jquery;
+
+                // 登 录 提 交
+				form.on('submit(login)', function(data) {
+					console.log(data.field);
+
+					$.ajax({
+						url: "/admin/index/loginApi",
+						data: data.field,
+						method: 'POST',
+						success: function (res) {
+							if (res.code  === 0) {
+								popup.success(res.message, function() {
+									location.href = "/admin";
+								});
+							} else {
+								popup.failure("失败："+res.message);
+							}
+						},
+						error: function (res) {
+							popup.warming("发生错误");
+						}
+					});
+
+					button.load({
+						elem: '.login',
+						time: 1500,
+						done: function() {
+							// popup.success("登录成功", function() {
+							// 	location.href = "index.html"
+							// });
+						}
+					})
+					return false;
+				});
+			})
+		</script>
+	</body>
+</html>

@@ -1,0 +1,59 @@
+
+<template>
+    <van-nav-bar
+        title="我的关注"
+        left-text="返回"
+        fixed
+        left-arrow
+        @click-left="onClickLeft"
+    ></van-nav-bar>
+    <div style="height: 46px;"></div>
+
+    <van-list
+        v-model="loading"
+        :finished="finished"
+        finished-text="没有更多了"
+        @load="onLoad"
+    >
+        <van-cell class="list avatar" v-for="item in list" :key="item" :icon="App.res + item.avatar" :title="item.nickname"></van-cell>
+    </van-list>
+
+
+</template>
+
+<script>
+
+    //导入组件 form vant
+    App.use(['List'], vant);
+
+    //定义Vue实例
+    page.uhome.upopup = new Vue({
+        el: '#user-popup',
+        data: {
+            list: [],
+            loading: false,
+            finished: false,
+            page: 1
+        },
+        methods: {
+            onClickLeft: function(){
+                page.uhome.show_popup = false;
+            },
+            onLoad() {
+                var _this = this;
+                App.es.ajax({
+                    cmd: "index.User.getFollowList",
+                    data: {page: this.page}
+                }, function(e, a) {
+                    if (e) {
+                        for (var s in e.result.list) _this.list.push(e.result.list[s]);
+                        10 > e.result.list.length && (_this.finished = !0), _this.loading = !1, _this.page ++;
+                    } else setTimeout(function() {
+                        page.mpage.loading = !1;
+                    }, 500);
+                });
+            }
+        }
+    });
+
+</script>
