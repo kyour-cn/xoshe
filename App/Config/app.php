@@ -24,24 +24,24 @@ return [
 
     //资源api服务器接口配置
     'dev_res_api' => [
-        'Host' => 'ac.xoshe.cn',
+        'Host' => 'xxx.xoshe.cn',
         'User' => 'xoshe',
-        'Secret' => 'kyourpwd'
+        'Secret' => 'xxxxx'
     ],
 
     //阿里短信配置
     'dev_alimsg' => [
-        'AccessKey' => 'LTAIzBqPtIjhosZh',
-        'Secret'    => 'NSc3HEYybHzYByE7JfoZdgknnfn7z5',
+        'AccessKey' => 'xxxx',
+        'Secret'    => 'xxxxxxxxx',
         'SignName'  => '皮小猿'
     ],
 
     //阿里oss配置
     'dev_alioss' => [
-        'AccessKey'   => 'LTAIzBqPtIjhosZh',
-        'Secret'      => 'NSc3HEYybHzYByE7JfoZdgknnfn7z5',
+        'AccessKey'   => 'xxxx',
+        'Secret'      => 'xxxxxxxxx',
         'Endpoint'    => "http://oss-cn-chengdu.aliyuncs.com",
-        'Bucket'      => 'monkeypi'
+        'Bucket'      => 'xxxx'
     ]
 
 ];
