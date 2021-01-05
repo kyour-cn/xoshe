@@ -20,12 +20,12 @@ class Ftp
     public function __construct(array $config = [])
     {
         /*
-        //FTP服务器
+        //app配置中新增 FTP服务器
         'dev_res_ftp' => [
-            'host' => 'LTAIzBqPtIjhosZh',
-            'port'    => 'NSc3HEYybHzYByE7JfoZdgknnfn7z5',
-            'user'  => '皮小猿',
-            'password'  => '皮小猿'
+            'host' => 'xx',
+            'port'    => 'xx',
+            'user'  => 'xx',
+            'password'  => 'xx'
         ],
          */
         $this->config = $config ?:config('app.dev_res_ftp');

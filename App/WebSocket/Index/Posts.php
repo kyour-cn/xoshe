@@ -158,7 +158,7 @@ class Posts extends Controller
                     ->join('article as a', 'a.id = ah.aid')
                     ->join('user as u', 'u.id = a.uid')
                     ->join('topic as t', 't.id = a.tid')
-                    ->field('a.*,u.id as uid,u.nickname,u.avatar,c.name as cname,t.id as tid')
+                    ->field('a.*,u.id as uid,u.nickname,u.avatar,t.name as cname,t.id as tid')
                     ->limit($limit * ($page - 1), $limit)
                     ->order('ah.id', 'DESC')
                     ->all([

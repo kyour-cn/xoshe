@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# 此文件用于快捷管理服务
+/usr/bin/php easyswoole server $1 $2
+
+
+# 使用方法 保留两个参数启动ws服务
+# ./run start -d
+
+# ./run stop

@@ -6,7 +6,7 @@ use EasySwoole\EasySwoole\AbstractInterface\Event;
 use EasySwoole\Http\Request;
 use EasySwoole\Http\Response;
 
-use EasySwoole\RedisPool\Redis;
+use EasySwoole\RedisPool\RedisPool;
 use EasySwoole\Socket\Dispatcher;
 use App\WebSocket\WebSocketParser;
 
@@ -33,15 +33,9 @@ class EasySwooleEvent implements Event
     {
         // TODO: Implement initialize() method.
 
-        // 载入助手函数
-        include_once EASYSWOOLE_ROOT . '/App/helper.php';
-
-        //时区设置
-        date_default_timezone_set(config('app.timezone')?:'Asia/Shanghai');
-
         // -------------------- DB --------------------
         //创建数据库连接池
-        $db_conf = config('db');
+        $db_conf = config('database');
         $config = new DbConfig();
         //数据库配置
         $config->setDatabase($db_conf['name'])
@@ -66,14 +60,15 @@ class EasySwooleEvent implements Event
         // -------------------- REDIS --------------------
         //redis连接池注册
         $r_conf = config('redis');
-        Redis::getInstance()
-            ->register('redis', new RedisConfig([
+        RedisPool::getInstance()
+            ->register(new RedisConfig([
                 'host'      => $r_conf['host'],
                 'port'      => $r_conf['port'],
                 'auth'      => $r_conf['password'],
                 'serialize' => RedisConfig::SERIALIZE_NONE,
                 'db'        => $r_conf['db']
-            ]));
+            ]),'redis');
+
         unset($r_conf);
         // -------------------- REDIS END --------------------
 
@@ -102,34 +97,6 @@ class EasySwooleEvent implements Event
     //服务创建
     public static function mainServerCreate(EventRegister $register)
     {
-        /**
-         * **************** Redis 缓存清理 **********************
-         */
-        (function(){
-            $r_conf = config('redis');
-
-            //删除wsc开头的临时缓存
-            $redis = new \Redis();
-            $redis->connect($r_conf['host'], $r_conf['port']);
-            if(!empty($r_conf['password']))
-                $redis->auth($r_conf['password']); //密码验证
-
-            $iterator = null;
-            $i = 0;//计数
-            while (true) {
-                $keys = $redis->scan($iterator, 'swc_*');
-                if ($keys === false) {
-                    //迭代结束，未找到匹配pattern的key
-                    echo "del caches ok,count:$i\n";
-                    $redis->close();
-                    return; //退出
-                }
-                foreach ($keys as $key) {
-                    $i++;
-                    $redis->del($key);
-                }
-            }
-        })();
 
         /**
          * **************** websocket控制器 **********************
@@ -172,44 +139,6 @@ class EasySwooleEvent implements Event
          * **************** Crontab任务计划 **********************
          */
         Manager::getInstance()->addProcess(new \App\Crontab\Rergister());
-
-        /**
-         * **************** 启动其他TcpServer **********************
-         */
-/*
-        // 单独端口开启TCP服务器，添加子服务。
-        $server = ServerManager::getInstance()->getSwooleServer();
-
-        // Mqtt服务
-        $mqttServer = $server->addlistener('0.0.0.0', 8102, SWOOLE_TCP);
-        $mqttServer->set([
-            'open_length_check' => false, //不验证数据包
-            'open_mqtt_protocol' => true, //支持解析mqtt协议
-
-            'heartbeat_check_interval' => 150,
-            'heartbeat_idle_time' => 300,
-        ]);
-        $mqttServer->on('Connect', '\\App\\TcpServer\\Mqtt\\MqttEvent::connect');
-        $mqttServer->on('Receive', '\\App\\TcpServer\\Mqtt\\MqttEvent::receive');
-        $mqttServer->on('Close', '\\App\\TcpServer\\Mqtt\\MqttEvent::close');
-
-        //Tcp服务
-        $subPort1 = $server->addlistener('0.0.0.0', 8101, SWOOLE_TCP);
-        $subPort1->set([
-            'open_length_check' => false, //不验证数据包
-        ]);
-        $subPort1->on('connect', function (\Swoole\Server $server, int $fd, int $reactor_id) {
-//            echo "fd:{$fd} 已连接\n";
-//            $str = '恭喜你连接成功';
-//            $server->send($fd, $str);
-        });
-        $subPort1->on('close', function (\Swoole\Server $server, int $fd, int $reactor_id) {
-//            echo "fd:{$fd} 已关闭\n";
-        });
-        $subPort1->on('receive', function (\Swoole\Server $server, int $fd, int $reactor_id, string $data) {
-//            echo "fd:{$fd} 发送消息:{$data}\n";
-        });
-*/
 
     }
 }

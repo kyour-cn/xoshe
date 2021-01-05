@@ -2,6 +2,8 @@
 
 namespace App\Common;
 
+use EasySwoole\RedisPool\RedisPool;
+
 /**
  * 实现Redis Session
  * @authar kyour.cn
@@ -20,20 +22,19 @@ class SessionRedisHandler implements \SessionHandlerInterface
     public function close()
     {
         $this->redisPool->recycleObj($this->redis);
-
         return true;
     }
 
     /**
      * SESSION打开
-     * @param   save_path   string 保存路径
-     * @param   session_name string 会话id
+     * @param   $save_path   string 保存路径
+     * @param   $session_name string 会话id
      * @return  boolean 是否成功
+     * @throws \Throwable
      */
-    public function open($save_path, $name)
+    public function open($save_path, $session_name): bool
     {
-
-        $this->redisPool = \EasySwoole\RedisPool\Redis::getInstance()->get('redis');
+        $this->redisPool = RedisPool::getInstance()->getPool('redis');
         $this->redis= $this->redisPool->getObj();
         return true;
     }
@@ -62,7 +63,7 @@ class SessionRedisHandler implements \SessionHandlerInterface
 
     /**
      * 删除Session信息
-     * @param   key string Session的key值
+     * @param   $session_id string Session的key值
      * @return  boolean
      */
     public function destroy($session_id)

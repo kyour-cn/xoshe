@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+use App\Common\Utils;
+
 define('SWORD_NULL', "SWORD_NULL_VALUE");
 
 define('SWORD_REDIS_EXISTS', "SWORD_REDIS_EXISTS_VALUE");
@@ -13,7 +15,6 @@ if (!function_exists('container')) {
      */
     function container($name = SWORD_NULL, $value = SWORD_NULL)
     {
-
         $ins = App\Common\Container::getInstance();
 
         // 无参数时获取所有
@@ -30,7 +31,6 @@ if (!function_exists('container')) {
         $ins->set($name,$value);
 
         return true;
-
     }
 }
 
@@ -49,7 +49,7 @@ if (!function_exists('config')) {
 
         // 未初始化配置 -加载config文件夹的配置
         if(!$config){
-            $path = EASYSWOOLE_ROOT .'/App/Config';
+            $path = EASYSWOOLE_ROOT .'/Config';
             //取出配置目录全部文件
             foreach(scandir($path) as $file){
                 //如果是php文件
@@ -58,7 +58,6 @@ if (!function_exists('config')) {
                     $arr = require $path . DIRECTORY_SEPARATOR . $file;
                     //存入数组
                     $config[strtolower(basename($file,".php"))] = $arr;
-    
                 }
             }
         }
@@ -106,7 +105,7 @@ if (!function_exists('cache')) {
         if(is_null($name)){
             return null;
         }
-        $redis = \App\Common\Utils::getRedis();
+        $redis = Utils::getRedis();
 
         //判断是否存在
         if($value == SWORD_REDIS_EXISTS){

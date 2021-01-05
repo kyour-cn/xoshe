@@ -3,7 +3,7 @@
 ### 技术栈
 
 - PHP7.3
-- Swoole4
+- Swoole4.5
 - EasySwoole3.4
 - Redis
 - Mysql5.7+
@@ -17,24 +17,25 @@ PATH  部署目录
 │  ├─HttpController      Http控制器目录
 │  ├─WebSocket           WebSocket控制器目录
 │  ├─Crontab             定时器、计划任务
-│  ├─Config              配置文件目录
-│  │  ├─app.php              应用配置
-│  │  ├─db.php               数据库配置
-│  │  ├─redis.php            redis服务器配置
-│  │  └─session.php          Session配置
 │  ├─Common              其他公共类
 │  ├─Model               模型目录
 │  ├─Views               html视图目录
 │  └─helper.php          公共函数文件
-├─Public         静态资源目录
+├─Config              配置文件目录
+│  ├─app.php              应用配置
+│  ├─database.php         数据库配置
+│  ├─redis.php            redis服务器配置
+│  └─session.php          Session配置
+├─Public         Web静态资源目录
 ├─Temp           临时信息、缓存目录
 ├─vendor         PHP包源码目录
+├─bootstrap.php  bootstrap事件
+├─composer.json  Composer包配置信息
 ├─dev.php        服务器配置信息
 ├─EasySwooleEvent.php    服务器事件处理
 ├─nginx_make.php    Nginx代理生成工具
-├─run            快捷启动可执行文件
+├─sword             快捷启动可执行文件
 ├─...
-
 ```
 
 数据库文件在“文档”目录xoshe.sql
@@ -58,23 +59,18 @@ PATH  部署目录
 ## 项目启动
 
 1. 使用命令行cd到项目目录(App文件夹同路径)
-2. 运行 `./run start` 启动项目
-3. 后台运行 `./run start -d`
-4. 重启 `./run restart`
-5. 停止 `./run stop`
-
+2. 运行 `./sword start` 启动项目
+3. 后台运行 `./sword start -d`
+4. 重启 `./sword restart`
+5. 停止 `./sword stop`
 
 --------
 
-#### 更新记录
+
+### 更新记录
 ---
- `20-12-21` 优化调整
- - 新增社团
- - 优化完善其他功能
- `20-11-30` 开发更新
- - 完成文章查看，用户中心
- `20-11-5` 首次提交
- - 初代版本
+
+详细查看 /文档/更新日志.md
 
 #### License
 ---

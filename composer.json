@@ -1,24 +1,24 @@
 {
     "require": {
-        "easyswoole/easyswoole": "3.x",
+        "easyswoole/easyswoole": "^3.4",
         "easyswoole/socket": "^1.1",
         "easyswoole/orm": "^1.4",
         "easyswoole/template": "^1.0",
-        "topthink/think-template": "^2.0",
+        "easyswoole/verifycode": "3.x",
         "easyswoole/redis": "^1.3",
         "easyswoole/redis-pool": "^2.1",
         "easyswoole/session": "2.x",
         "easyswoole/validate": "^1.2",
-        "endroid/qr-code": "^3.9",
+        "topthink/think-template": "^2.0",
         "alibabacloud/client": "^1.5",
-        "easyswoole/verifycode": "3.x",
-        "gregwar/image": "^2.0",
         "aliyuncs/oss-sdk-php": "^2.4",
+        "endroid/qr-code": "^3.9",
+        "gregwar/image": "^2.0",
+        "simps/mqtt": "^1.0",
         "php-ffmpeg/php-ffmpeg": "^0.16.0",
         "ext-json": "*",
         "ext-fileinfo": "*",
-        "ext-redis": "*",
-        "simps/mqtt": "^1.0"
+        "ext-redis": "*"
     },
     "autoload": {
         "psr-4": {

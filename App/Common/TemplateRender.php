@@ -13,7 +13,7 @@ class TemplateRender implements RenderInterface
         $this->template = new Template($config);
     }
 
-    public function render(string $template, array $data = [], array $options = []): ?string
+    public function render(string $template, ?array $data = null, ?array $options = null): ?string
     {
         // TODO: Implement render() method.
         ob_start();
@@ -27,7 +27,7 @@ class TemplateRender implements RenderInterface
         // TODO: Implement afterRender() method.
     }
 
-    public function onException(\Throwable $throwable): string
+    public function onException(\Throwable $throwable ,$arg): string
     {
         // TODO: Implement onException() method.
         $msg = "{$throwable->getMessage()} at file:{$throwable->getFile()} line:{$throwable->getLine()}";

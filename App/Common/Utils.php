@@ -7,18 +7,18 @@ namespace App\Common;
 
 use App\Common\Extend\Oss;
 use App\Common\Extend\ResApi;
-use EasySwoole\RedisPool\Redis;
-use FtpClient\FtpClient;
+use EasySwoole\Redis\Redis;
+use EasySwoole\RedisPool\RedisPool;
 
 class Utils
 {
     /**
      * 获取redis实例
-     * @return \EasySwoole\Redis\Redis|null
+     * @return Redis|null
      */
-    public static function getRedis()
+    public static function getRedis(): ?Redis
     {
-        return Redis::defer('redis');
+        return RedisPool::defer('redis');
     }
 
     /**
@@ -28,7 +28,7 @@ class Utils
      * @param string|null $type 储存类型 local|oss
      * @return array
      */
-    public static function saveFile(string $file, string $target, $type = null)
+    public static function saveFile(string $file, string $target, $type = null): array
     {
         if($type === null){
             $type = config('app.res_type');
@@ -69,7 +69,7 @@ class Utils
      * @param string|null $type 储存类型 local|oss
      * @return array
      */
-    public static function delFile(string $target, $type = null)
+    public static function delFile(string $target, $type = null): array
     {
         if($type === null){
             $type = config('app.res_type');
@@ -134,30 +134,30 @@ class Utils
      * @param string $str string
      * @return string
      */
-    public static function emojiTextEncode(string $str): string
-    {
-        $text = json_encode($str); //暴露出unicode
-        //将emoji的unicode留下，其他不动，这里的正则比原答案增加了d，因为我发现我很多emoji实际上是\ud开头的，反而暂时没发现有\ue开头。
-        $text = preg_replace_callback("/(\\\u[2def][0-9a-f]{3})/i",function($str){
-            return addslashes($str[0]);
-        },$text);
-        return json_decode($text);
-    }
+//    public static function emojiTextEncode(string $str): string
+//    {
+//        $text = json_encode($str); //暴露出unicode
+//        //将emoji的unicode留下，其他不动，这里的正则比原答案增加了d，因为我发现我很多emoji实际上是\ud开头的，反而暂时没发现有\ue开头。
+//        $text = preg_replace_callback("/(\\\u[2def][0-9a-f]{3})/i",function($str){
+//            return addslashes($str[0]);
+//        },$text);
+//        return json_decode($text);
+//    }
 
     /**
      * emoji特殊字符转义-解码
      * @param $str string
      * @return string
      */
-    public static function emojiTextDecode(string $str): string
-    {
-        $text = json_encode($str); //暴露出unicode
-        //将两条斜杠变成一条，其他不动
-        $text = preg_replace_callback('/\\\\\\\\/i',function($str){
-            return '\\';
-        },$text);
-        return json_decode($text);
-    }
+//    public static function emojiTextDecode(string $str): string
+//    {
+//        $text = json_encode($str); //暴露出unicode
+//        //将两条斜杠变成一条，其他不动
+//        $text = preg_replace_callback('/\\\\\\\\/i',function($str){
+//            return '\\';
+//        },$text);
+//        return json_decode($text);
+//    }
 
     /**
      * 将某个时间到某个时间戳差值转换为文字描述
