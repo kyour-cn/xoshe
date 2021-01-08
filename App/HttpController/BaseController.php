@@ -34,11 +34,11 @@ class BaseController extends Controller
     }
 
     //获取Session对象
-    public function session(string $key, $data = 'SWORD_GET')
+    public function session(string $key, $data = SWORD_NULL)
     {
         $session = Session::getInstance();
 
-        if($data == 'SWORD_GET'){
+        if($data === SWORD_NULL){
             $d = $session->get($key);
             if($d){
                 return $d;

@@ -22,11 +22,6 @@ class TemplateRender implements RenderInterface
         return ob_get_contents();
     }
 
-    public function afterRender(?string $result, string $template, array $data = [], array $options = [])
-    {
-        // TODO: Implement afterRender() method.
-    }
-
     public function onException(\Throwable $throwable ,$arg): string
     {
         // TODO: Implement onException() method.

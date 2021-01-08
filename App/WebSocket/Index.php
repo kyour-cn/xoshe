@@ -7,9 +7,6 @@ use EasySwoole\Session\Session;
 
 use App\WebSocket\Base;
 
-use App\Common\Utils;
-use App\Common\Db;
-
 use App\Model\User as UserModel;
 
 /**

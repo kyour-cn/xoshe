@@ -5,10 +5,10 @@
  */
 namespace App\Common;
 
-use App\Common\Extend\Oss;
-use App\Common\Extend\ResApi;
 use EasySwoole\Redis\Redis;
 use EasySwoole\RedisPool\RedisPool;
+use Sword\Storage\Storage;
+use Sword\Storage\StorageException;
 
 class Utils
 {
@@ -18,7 +18,7 @@ class Utils
      */
     public static function getRedis(): ?Redis
     {
-        return RedisPool::defer('redis');
+        return RedisPool::defer();
     }
 
     /**
@@ -30,6 +30,14 @@ class Utils
      */
     public static function saveFile(string $file, string $target, $type = null): array
     {
+        $storage = Storage::getInstance()->getObject();
+        try {
+            $storage->upload($file, $target, false);
+            return [null, true];
+        } catch (StorageException $e) {
+            return ['fail', false];
+        }
+/*
         if($type === null){
             $type = config('app.res_type');
         }
@@ -61,6 +69,7 @@ class Utils
                 break;
         }
         return ['fail', false];
+*/
     }
 
     /**
@@ -71,13 +80,21 @@ class Utils
      */
     public static function delFile(string $target, $type = null): array
     {
+        $storage = Storage::getInstance()->getObject();
+        try {
+            $storage->delete($target);
+            return [null, true];
+        } catch (StorageException $e) {
+            return ['fail', false];
+        }
+        /*
         if($type === null){
             $type = config('app.res_type');
         }
         switch ($type) {
             case 'local': //本地储存
                 $path = EASYSWOOLE_ROOT. '/Public/' . $target;
-                if(@unlink($path)){
+                if(unlink($path)){
                     return [null, true];
                 }
                 return ['fail', false];
@@ -91,6 +108,7 @@ class Utils
                 break;
         }
         return ['fail', false];
+        */
     }
 
     /**

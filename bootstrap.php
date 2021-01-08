@@ -1,11 +1,10 @@
 <?php
 //全局bootstrap事件
 
-// 载入助手函数
-include_once EASYSWOOLE_ROOT . '/App/helper.php';
+//触发sword事件
+\Sword\SwordEvent::bootstrap();
 
-//时区设置
-date_default_timezone_set(config('app.timezone') ?: 'Asia/Shanghai');
+// ======================= 应用代码 =======================
 
 /**
  * **************** Redis 缓存清理 **********************
@@ -25,8 +24,8 @@ date_default_timezone_set(config('app.timezone') ?: 'Asia/Shanghai');
     while (true) {
         $keys = $redis->scan($iterator, 'swc_*');
         if ($keys === false) {
-            //迭代结束，未找到匹配pattern的key
-            echo "del caches ok,count:$i\n";
+            //结束，未找到匹配pattern的key
+//            echo "del caches ok,count:$i\n";
             $redis->close();
             return; //退出
         }

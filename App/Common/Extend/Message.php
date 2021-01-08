@@ -9,9 +9,16 @@ use AlibabaCloud\Client\AlibabaCloud;
  */
 class Message
 {
-
-    //阿里短信发送
-    static public function alimsg($phone,$templat = "SMS_176885217",$param = [])
+    /**
+     * 阿里短信发送
+     * @param $phone
+     * @param string $template
+     * @param array $param
+     * @return array
+     * @throws \AlibabaCloud\Client\Exception\ClientException
+     * @throws \AlibabaCloud\Client\Exception\ServerException
+     */
+    static public function alimsg($phone, string $template = "SMS_176885217", $param = [])
     {
         $conf = config('app.dev_alimsg');
         AlibabaCloud::accessKeyClient($conf['AccessKey'], $conf['Secret'])
@@ -32,7 +39,7 @@ class Message
                   'RegionId' => "cn-hangzhou",
                   'PhoneNumbers' => $phone,
                   'SignName' => $conf['SignName'],
-                  'TemplateCode' => $templat,
+                  'TemplateCode' => $template,
                   'TemplateParam' => json_encode($param),
                 ],
             ])

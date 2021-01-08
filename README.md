@@ -1,5 +1,10 @@
 # 小猿社H5源码 后端+前端
 
+> 小猿社是一款兴趣社区平台系统，采用PHP语言、Swoole扩展的常驻内存方式开发，前端支持H5和Apicloud的手机App。
+
+> 该系统支持文字图片、视频的发布，拥有多种互动模式，点赞、评论、关注、收藏功能，更有话题、社区等模式。
+> 该系统运用了单页面、Websocket、Vue、Vant等技术和框架，更具良好体验。
+
 ### 技术栈
 
 - PHP7.3
@@ -59,21 +64,27 @@ PATH  部署目录
 ## 项目启动
 
 1. 使用命令行cd到项目目录(App文件夹同路径)
-2. 运行 `./sword start` 启动项目
-3. 后台运行 `./sword start -d`
-4. 重启 `./sword restart`
-5. 停止 `./sword stop`
+2. 运行 `./sword server start` 启动项目
+3. 后台运行 `./sword server start -d`
+4. 重启 `./sword server restart`
+5. 停止 `./sword server stop`
 
---------
-
-
-### 更新记录
 ---
+
+## 更新记录
 
 详细查看 /文档/更新日志.md
+[/文档/更新日志.md](https://github.com/kyour-cn/xoshe/blob/main/%E6%96%87%E6%A1%A3/%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97.md)
 
-#### License
----
-The Apache License.
 
-Copyright (c) 2020 Kyour.cn
+## 参与开发
+
+> 直接提交PR或者Issue即可
+
+## 版权信息
+
+本项目遵循Apache2.0 开源协议发布，并提供免费使用。
+
+本项目包含的第三方源码和二进制文件之版权信息另行标注。
+
+更多细节参阅 [LICENSE.txt](LICENSE.txt)

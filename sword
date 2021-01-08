@@ -1,10 +1,41 @@
-#!/bin/bash
+#!/usr/bin/env php
+<?php
+/**
+ * Easyswoole命令行
+ * 启动服务：./sword server start
+ * 常驻内存：./sword server start -d
+ * 停止服务：./sword server stop
+ */
 
-# 此文件用于快捷管理服务
-/usr/bin/php easyswoole server $1 $2
+use EasySwoole\EasySwoole\Command\CommandRunner;
+use EasySwoole\Command\Caller;
 
+$file = __DIR__ . '/vendor/autoload.php';
 
-# 使用方法 保留两个参数启动ws服务
-# ./run start -d
+if (file_exists($file)) {
+    require $file;
+}else{
+    die("include composer autoload.php fail\n Please run: composer install\n");
+}
 
-# ./run stop
+$realCwd = substr(realpath($file),0,-strlen("/vendor/autoload.php"));
+
+defined('IN_PHAR') or define('IN_PHAR', boolval(\Phar::running(false)));
+defined('RUNNING_ROOT') or define('RUNNING_ROOT', $realCwd);
+defined('EASYSWOOLE_ROOT') or define('EASYSWOOLE_ROOT', IN_PHAR ? \Phar::running() : $realCwd);
+
+if(file_exists(EASYSWOOLE_ROOT.'/bootstrap.php')){
+    require_once EASYSWOOLE_ROOT.'/bootstrap.php';
+}
+
+$caller = new Caller();
+$caller->setScript(current($argv));
+$caller->setCommand(next($argv));
+$caller->setParams($argv);
+reset($argv);
+
+$ret = CommandRunner::getInstance()->run($caller);
+if($ret && !empty($ret->getMsg())){
+    echo $ret->getMsg()."\n";
+}
+

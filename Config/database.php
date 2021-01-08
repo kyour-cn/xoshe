@@ -6,8 +6,9 @@
 return [
     'host'      => '127.0.0.1', //服务器地址
     'port'      => 3306,    //端口
-    'user'      => 'xoshe',  //用户名
-    'password'  => 'xxxxxx',  //密码
+    'user'      => 'root',  //用户名
+    'password'  => 'xxx',  //密码
     'charset'   => 'utf8',  //编码
     'name'      => 'xoshe',  //数据库名
+
 ];

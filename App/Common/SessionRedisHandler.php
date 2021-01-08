@@ -8,12 +8,21 @@ use EasySwoole\RedisPool\RedisPool;
  * 实现Redis Session
  * @authar kyour.cn
  */
-
 class SessionRedisHandler implements \SessionHandlerInterface
 {
     private $redis;
     private $redisPool;
     private $expire = 86400 * 7; //7天
+
+    /**
+     * SessionRedisHandler constructor.
+     * @param $config
+     */
+    public function __construct($config = [])
+    {
+        isset($config['expire']) && $this->expire = $config['expire'];
+    }
+
 
     /**
      * SESSION关闭
@@ -34,7 +43,7 @@ class SessionRedisHandler implements \SessionHandlerInterface
      */
     public function open($save_path, $session_name): bool
     {
-        $this->redisPool = RedisPool::getInstance()->getPool('redis');
+        $this->redisPool = RedisPool::getInstance()->getPool();
         $this->redis= $this->redisPool->getObj();
         return true;
     }
@@ -57,7 +66,6 @@ class SessionRedisHandler implements \SessionHandlerInterface
      */
     public function write($session_id, $session_data)
     {
-        // $this->redis = \EasySwoole\RedisPool\Redis::defer('redis');
         $this->redis->set($session_id, $session_data, $this->expire);
     }
 
@@ -68,19 +76,17 @@ class SessionRedisHandler implements \SessionHandlerInterface
      */
     public function destroy($session_id)
     {
-        // $this->redis = \EasySwoole\RedisPool\Redis::defer('redis');
         $this->redis->del($session_id);
         return true;
     }
 
     /**
      * 读取SESSION信息并验证是否有效
-     * @param   key string session的key值
+     * @param   $session_id string session的key值
      * @return  mixed
      */
     public function read($session_id)
     {
-        // $this->redis = \EasySwoole\RedisPool\Redis::defer('redis');
         return $this->redis->get($session_id);
     }
 

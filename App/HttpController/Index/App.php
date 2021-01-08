@@ -49,7 +49,7 @@ class App extends BaseAuth
             'content' => '优质同城兴趣社区',
             'pic' => $odos['fenxiang_img'],
             'bgpic' => $odos['fenxiang_img'], //picture2
-            'countdown' => 1
+            'countdown' => 2
         ];
 
         $s = '

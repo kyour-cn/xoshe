@@ -24,14 +24,19 @@ use EasySwoole\Session\SessionFileHandler;
 use App\Common\SessionRedisHandler;
 use EasySwoole\Component\Di;
 use EasySwoole\Component\Process\Manager;
+use Sword\Storage\Storage;
+use Sword\Storage\StorageException;
+use Sword\SwordEvent;
 
 class EasySwooleEvent implements Event
 {
 
-    //初始化
     public static function initialize()
     {
         // TODO: Implement initialize() method.
+
+        //触发sword事件
+        SwordEvent::initialize();
 
         // -------------------- DB --------------------
         //创建数据库连接池
@@ -67,7 +72,7 @@ class EasySwooleEvent implements Event
                 'auth'      => $r_conf['password'],
                 'serialize' => RedisConfig::SERIALIZE_NONE,
                 'db'        => $r_conf['db']
-            ]),'redis');
+            ]));
 
         unset($r_conf);
         // -------------------- REDIS END --------------------
@@ -89,14 +94,17 @@ class EasySwooleEvent implements Event
         });
 
         // 注册异常处理
-        Di::getInstance()->set(SysConst::HTTP_EXCEPTION_HANDLER,[ExceptionHandler::class,'handle']);
+        Di::getInstance()->set(SysConst::HTTP_EXCEPTION_HANDLER, [ExceptionHandler::class,'handle']);
         // -------------------- HTTP END --------------------
 
     }
 
-    //服务创建
     public static function mainServerCreate(EventRegister $register)
     {
+        // TODO: Implement mainServerCreate() method.
+
+        //触发sword事件
+        SwordEvent::mainServerCreate();
 
         /**
          * **************** websocket控制器 **********************
@@ -118,22 +126,28 @@ class EasySwooleEvent implements Event
          * **************** 模板引擎 **********************
          * -在全局的主服务中创建事件中，实例化该Render,并注入你的驱动配置
          */
-        Render::getInstance()->getConfig()->setRender(new TemplateRender());
-        Render::getInstance()->getConfig()->setTempDir(EASYSWOOLE_TEMP_DIR);
-        Render::getInstance()->attachServer(ServerManager::getInstance()->getSwooleServer());
+        $render = Render::getInstance();
+        $render->getConfig()->setRender(new TemplateRender());
+        $render->getConfig()->setTempDir(EASYSWOOLE_TEMP_DIR);
+        $render->attachServer(ServerManager::getInstance()->getSwooleServer());
 
         /**
          * **************** 启动Session服务 **********************
          */
         $session_conf = config('session');
-        //Session -可以自己实现一个标准的session handler
         if($session_conf['type'] == 'redis'){
-            $handler = new SessionRedisHandler();
+            $handler = new SessionRedisHandler($session_conf);
         }elseif($session_conf['type'] == 'file'){
             $handler = new SessionFileHandler(EASYSWOOLE_TEMP_DIR);
         }
-        //表示cookie name   还有save path
+
+        // ($storage,$sessionName = 'easy_session',$savePath = '/')
         Session::getInstance($handler, $session_conf['sessionName'], 'session_dir');
+
+        /**
+         * **************** 资源储存组件配置 **********************
+         */
+        Storage::setInstance(config('storage'));
 
         /**
          * **************** Crontab任务计划 **********************

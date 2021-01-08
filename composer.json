@@ -1,24 +1,31 @@
 {
+    "name": "php-sword/sword",
+    "description": "The PhpSword Framework.",
+    "type": "project",
+    "keywords": ["php", "swoole", "easyswoole", "sword"],
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Kyour",
+            "email": "kyour@vip.qq.com"
+        }
+    ],
     "require": {
-        "easyswoole/easyswoole": "^3.4",
+        "php-sword/framework": "^0.0",
+        "php-sword/storage": "^0.0.2",
         "easyswoole/socket": "^1.1",
         "easyswoole/orm": "^1.4",
         "easyswoole/template": "^1.0",
         "easyswoole/verifycode": "3.x",
         "easyswoole/redis": "^1.3",
         "easyswoole/redis-pool": "^2.1",
-        "easyswoole/session": "2.x",
         "easyswoole/validate": "^1.2",
         "topthink/think-template": "^2.0",
         "alibabacloud/client": "^1.5",
         "aliyuncs/oss-sdk-php": "^2.4",
         "endroid/qr-code": "^3.9",
         "gregwar/image": "^2.0",
-        "simps/mqtt": "^1.0",
-        "php-ffmpeg/php-ffmpeg": "^0.16.0",
-        "ext-json": "*",
-        "ext-fileinfo": "*",
-        "ext-redis": "*"
+        "simps/mqtt": "^1.0"
     },
     "autoload": {
         "psr-4": {

@@ -4,7 +4,6 @@
  */
 namespace App\HttpController\Admin;
 
-use App\Common\Db;
 use App\Model\User as UserModel;
 // use App\Common\Utils;
 use EasySwoole\Validate\Validate;

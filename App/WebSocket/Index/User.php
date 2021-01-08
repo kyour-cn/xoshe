@@ -10,9 +10,6 @@ use EasySwoole\Mysqli\QueryBuilder;
 
 use App\Model\User as UserModel;
 
-use App\Common\Utils;
-use App\Common\Db;
-
 /**
  * 前端帖子相关
  */

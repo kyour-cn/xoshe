@@ -2,7 +2,7 @@
 <?php
 /**
  * 因为nginx配置代理、ssl、websocket较为复杂 所以编写了这个工具。
- * 用法：1.在$config变量中配置你的信息
+ * 用法： 1.在$config变量中配置你的信息
  *       2.在该目录运行命令 ./nginx_make.php
  *       3.在该目录会自动生成 nginx.conf,这个文件就是配置文件，将它添加到nginx中
  *       4.重启nginx服务器即可
@@ -11,31 +11,36 @@
 $config = [
     //类型 1:http 2:https 3:http+https
     'type' => 1,
-    //静态首页
+    //静态首页 -开启后直接由nginx返回首页
     'static_index' => true,
-    //http端口  第一个是外网端口，第二个是内网服务端口
-    'http_port' => [80, 8105],
-    //https端口 第一个是外网端口，第二个是内网服务端口
-    'https_port' => [443, 8105],
+
+    //http映射端口 -外网
+    'http_port' => 80,
+    //https映射端口 -外网
+    'https_port' => 443,
+    //内网服务端口 与dev.php中配置的端口一直
+    'server_port' => 8105,
+
     //外网访问域名 多个用空格分割
-    'host_name' => 'www.xoshe.cn xoshe.cn xo.kyour.cn',
+    'host_name' => 'www.xoshe.cn xoshe.cn',
+
     //应用根目录 绝对路径，以/结尾
-    'root_path' => '/data/www/xoshe/',
+    'root_path' => __DIR__ . '/', //默认当前路径
     //静态资源目录名称
     'public_path' => 'Public',
 
-    //websocket的url,为空则不开启,不支持'/'
+    //websocket的url,为空则不开启,不支持填写'/'
     'ws_url' => '/ws',
 
     //https的ssl证书文件（绝对路径） -仅开启https有效
     'ssl_cer' => '/data/www/xoshe/ssl/fullchain.cer',
     //https的ssl密钥文件（绝对路径） -仅开启https有效
-    'ssl_key' => '/data/www/xoshe/ssl/mk.kyour.cn.key',
+    'ssl_key' => '/data/www/xoshe/ssl/xoshe.cn.key',
 
     //图片缓存时间
     'img_cache' => '3d',
     //资源文件缓存时间 （js、css、字体）
-    'res_cache' => '7d',
+    'res_cache' => '7d'
 ];
 
 // ===============================================================================================
@@ -45,7 +50,7 @@ $config = [
 $str_http = '
 server
 {
-    listen '.$config['http_port'][0].';
+    listen '.$config['http_port'].';
     #listen [::]:80;
     server_name '.$config['host_name'].';
     root '.$config['root_path'].$config['public_path'].';
@@ -75,7 +80,7 @@ server
 
         proxy_set_header Upgrade $http_upgrade;   # 升级协议头
         proxy_set_header Connection upgrade;
-        proxy_pass http://127.0.0.1:'.$config['http_port'][1].';
+        proxy_pass http://127.0.0.1:'.$config['server_port'].';
     }
     ':'').
     '
@@ -107,7 +112,7 @@ server
 
         #代理swoole -没有静态文件的情况下
         if ($falg = 0) {
-			proxy_pass http://127.0.0.1:'.$config['http_port'][1].';
+			proxy_pass http://127.0.0.1:'.$config['server_port'].';
         }
 
         #html文件存在 - 重写路径 .html
@@ -124,7 +129,7 @@ $str_https = '
 # Https配置，其他配置与上面相同，只是多了ssl证书配置
 server
 {
-    listen '.$config['https_port'][0].' ssl http2;
+    listen '.$config['https_port'].' ssl http2;
     #listen [::]:443 ssl http2;
     server_name '.$config['host_name'].';
     root '.$config['root_path'].$config['public_path'].';
@@ -162,7 +167,7 @@ server
 
         proxy_set_header Upgrade $http_upgrade;   # 升级协议头
         proxy_set_header Connection upgrade;
-        proxy_pass http://127.0.0.1:'.$config['http_port'][1].';
+        proxy_pass http://127.0.0.1:'.$config['server_port'].';
     }
     ':'').
     '
@@ -194,7 +199,7 @@ server
 
         #代理swoole -没有静态文件的情况下
         if ($falg = 0) {
-			proxy_pass http://127.0.0.1:'.$config['https_port'][1].';
+			proxy_pass http://127.0.0.1:'.$config['server_port'].';
         }
 
         #html文件存在 - 重写路径 .html
@@ -203,7 +208,6 @@ server
         }
 
     }
-
     access_log off;
 }
 ';
